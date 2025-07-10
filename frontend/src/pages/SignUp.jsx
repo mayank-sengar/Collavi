@@ -1,7 +1,12 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import signup4 from "../assets/signup4.png"
+import { useNavigate } from 'react-router-dom'
+import axiosInstance from '../utils/axiosInstance';
+import API_PATHS from '../utils/apiPaths';
+import { toast } from 'react-hot-toast';
+import { UserContext } from '../context/userContext.jsx';
 
 const SignUp = () => {
   const [signUpData, setSignUpData] = useState({
@@ -9,12 +14,70 @@ const SignUp = () => {
     email: "",
     password: ""
   });
-  const [error, _setError] = useState(null);
-  const [isPending, _setIsPending] = useState(false);
+  const [error, setError] = useState(null);
+  const [isPending, setIsPending] = useState(false);
+  const navigate = useNavigate();
+  const { updateUser } = useContext(UserContext);
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    // Add your signup logic here
+    setError(null);
+    if (!signUpData.fullName || !signUpData.email || !signUpData.password) {
+      setError("All Fields are required");
+      return;
+    }
+    setIsPending(true);
+    try {
+      // Step 1: Register the user
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        fullName: signUpData.fullName,
+        email: signUpData.email,
+        password: signUpData.password,
+      });
+      
+      if (response.status === 201) {
+        console.log("Signup successful:", response);
+        
+        // Step 2: Auto-login the user to get authentication tokens
+        try {
+          const loginResponse = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+            email: signUpData.email,
+            password: signUpData.password,
+          });
+          
+          console.log("Auto-login successful:", loginResponse);
+          
+          if (loginResponse.data && loginResponse.data.data && loginResponse.data.data.user) {
+            // Update user context with authenticated user data
+            updateUser(loginResponse.data.data.user);
+            
+            toast.success("Account created successfully!");
+            
+            // Navigate after a small delay to ensure context is updated
+            setTimeout(() => {
+              navigate("/onboarding");
+            }, 100);
+          }
+        } catch (loginError) {
+          console.error("Auto-login failed:", loginError);
+          // Fall back to using the registration data
+          if (response.data && response.data.data) {
+            updateUser(response.data.data);
+            toast.success("Signup successful!");
+            navigate("/onboarding");
+          }
+        }
+      } 
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        setError(error.response.data.message);  
+      } else {
+        console.error("Signup error:", error);
+        setError("Something went wrong. Please try again");
+      }
+    } finally {
+      setIsPending(false);
+    }
     console.log('Signup data:', signUpData);
   }
   return (
@@ -24,9 +87,7 @@ const SignUp = () => {
         <div className="w-full lg:w-1/2 p-4 sm:p-8 flex flex-col">
           {/* LOGO */}
           <div className="mb-4 flex items-center justify-start gap-2">
-            <div className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">C</span>
-            </div>
+           
             <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-500 tracking-wider">
               Collavi
             </span>
@@ -35,7 +96,7 @@ const SignUp = () => {
           {/* ERROR MESSAGE IF ANY */}
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
-              <span className="text-red-300">{error.response.data.message}</span>
+              <span className="text-red-300">{error}</span>
             </div>
           )}
 
@@ -85,21 +146,19 @@ const SignUp = () => {
                     </label>
                     <input
                       type="password"
-                      placeholder="********"
+                      placeholder="Enter your password"
                       className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 placeholder-gray-400"
                       value={signUpData.password}
                       onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                       required
                     />
-                    <p className="text-xs text-gray-400 mt-1">
-                      Password must be at least 6 characters long
-                    </p>
+                    
                   </div>
 
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-center gap-2">
                     <input 
                       type="checkbox" 
-                      className="w-4 h-4 mt-1 bg-gray-700 border border-gray-600 rounded focus:ring-green-400 focus:ring-2 text-green-600" 
+                      className="w-4 h-4  bg-gray-700 border border-gray-600 rounded focus:ring-green-400 focus:ring-2 text-green-600" 
                       required 
                     />
                     <span className="text-xs leading-tight text-gray-300">

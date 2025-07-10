@@ -1,4 +1,4 @@
- const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8001" }`;
+export const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8001" }`;
 
 
  const API_PATHS={
@@ -29,4 +29,4 @@
 }
 
 
-export default {BASE_URL,API_PATHS}
+export default API_PATHS;
