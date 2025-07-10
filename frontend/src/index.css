@@ -2,5 +2,15 @@
 @plugin "daisyui";
 
 @theme {
-  --default-transition-duration: 200ms;
+  --color-primary: #10b981;
+  --color-secondary: #34d399;
+  --color-accent: #6ee7b7;
+  --color-neutral: #374151;
+  --color-base-100: #111827;
+  --color-base-200: #1f2937;
+  --color-base-300: #374151;
+  --color-info: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
 }

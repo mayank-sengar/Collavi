@@ -29,14 +29,6 @@ function App() {
 
   return (
     <div className='h-screen' data-theme="dark">
-<button className="btn">Button</button>
-<button className="btn btn-neutral">Neutral</button>
-<button className="btn btn-primary">Primary</button>
-<button className="btn btn-secondary">Secondary</button>
-<button className="btn btn-accent">Accent</button>
-<button className="btn btn-ghost">Ghost</button>
-<button className="btn btn-link">Link</button>
-
       <Routes>
         <Route path='/' element={authUser ? <HomePage /> : <Navigate to="/login"/>} />
         <Route path='/login' element={!authUser ? <Login /> : <Navigate to="/"/>} />
