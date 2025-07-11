@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import ChatPage from './pages/ChatPage';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
@@ -7,35 +7,30 @@ import OnBoarding from './pages/OnBoarding';
 import HomePage from './pages/HomePage';
 import CallPage from './pages/CallPage.jsx';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import UserProvider, { UserContext } from './context/userContext.jsx';
+import PageLoader from './components/PageLoader.jsx';
+import useAuthUser from './hooks/useAuthUser.jsx';
+function App() {
+  // const { user, loading } = useContext(UserContext);
 
-function AppContent() {
-  const { user, loading } = useContext(UserContext);
 
-  if (loading) return <Toaster position='top-right' reverseOrder={false} />;
+    const {authUser, isLoading} = useAuthUser();
+    const isOnboarded = authUser?.isOnboarded;
 
+    if(isLoading ) return <PageLoader/>
   return (
     <div className='h-screen' data-theme="dark">
       <Routes>
-        <Route path='/' element={user ? <HomePage /> : <Navigate to="/login"/>} />
-        <Route path='/login' element={!user ? <Login /> : <Navigate to="/"/>} />
-        <Route path='/signup' element={!user ? <SignUp /> : <Navigate to="/"/>} />
-        <Route path='/chat' element={user ? <ChatPage /> : <Navigate to="/login"/>}/>
-        <Route path='/call' element={user ? <CallPage /> : <Navigate to="/login"/>}/>
-        <Route path='/notifications' element={user ? <Notifications /> : <Navigate to="/login"/>} />
-        <Route path='/onboarding' element={user ? <OnBoarding /> : <Navigate to="/login"/>} />
+      <Route path="/" element={  authUser && isOnboarded ? (<HomePage />) 
+      : !authUser ? (<Navigate to="/login"/>) : (<OnBoarding /> )}/>
+        <Route path='/login' element={!authUser ? <Login /> : <Navigate to="/"/>} />
+        <Route path='/signup' element={!authUser ? <SignUp /> : <Navigate to="/"/>} />
+        <Route path='/chat' element={authUser ? <ChatPage /> : <Navigate to="/login"/>}/>
+        <Route path='/call' element={authUser ? <CallPage /> : <Navigate to="/login"/>}/>
+        <Route path='/notifications' element={authUser ? <Notifications /> : <Navigate to="/login"/>} />
+        <Route path='/onboarding' element={authUser && !isOnboarded ? (<OnBoarding />) : (authUser && isOnboarded) ?<HomePage/>: (<Navigate to="/login"/>) } />
       </Routes>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
-  );
+  )
 }
 
 export default App;

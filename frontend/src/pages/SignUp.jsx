@@ -7,6 +7,10 @@ import axiosInstance from '../utils/axiosInstance';
 import API_PATHS from '../utils/apiPaths';
 import { toast } from 'react-hot-toast';
 import { UserContext } from '../context/userContext.jsx';
+import { useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import {signup} from "../utils/apiPaths.js"
+
 
 const SignUp = () => {
   const [signUpData, setSignUpData] = useState({
@@ -14,72 +18,90 @@ const SignUp = () => {
     email: "",
     password: ""
   });
-  const [error, setError] = useState(null);
-  const [isPending, setIsPending] = useState(false);
-  const navigate = useNavigate();
-  const { updateUser } = useContext(UserContext);
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError(null);
-    if (!signUpData.fullName || !signUpData.email || !signUpData.password) {
-      setError("All Fields are required");
-      return;
-    }
-    setIsPending(true);
-    try {
-      // Step 1: Register the user
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
-        fullName: signUpData.fullName,
-        email: signUpData.email,
-        password: signUpData.password,
-      });
+  const queryClient = useQueryClient();
+  const { mutate:signUpMutation , isPending, error } = useMutation({
+    mutationFn:signup,
+    //on signup re-fetch the authenticated user
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["authUser"] })
+  });
+
+  //normal context
+  // const [error, setError] = useState(null);
+  // const [isPending, setIsPending] = useState(false);
+  // const navigate = useNavigate();
+  // const { updateUser } = useContext(UserContext);
+
+  // const handleSignup = async (e) => {
+  //   e.preventDefault();
+  //   setError(null);
+  //   if (!signUpData.fullName || !signUpData.email || !signUpData.password) {
+  //     setError("All Fields are required");
+  //     return;
+  //   }
+  //   setIsPending(true);
+  //   try {
+  //     // Step 1: Register the user
+  //     const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+  //       fullName: signUpData.fullName,
+  //       email: signUpData.email,
+  //       password: signUpData.password,
+  //     });
       
-      if (response.status === 201) {
-        console.log("Signup successful:", response);
+  //     if (response.status === 201) {
+  //       console.log("Signup successful:", response);
         
-        // Step 2: Auto-login the user to get authentication tokens
-        try {
-          const loginResponse = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
-            email: signUpData.email,
-            password: signUpData.password,
-          });
+  //       // Step 2: Auto-login the user to get authentication tokens
+  //       try {
+  //         const loginResponse = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+  //           email: signUpData.email,
+  //           password: signUpData.password,
+  //         });
           
-          console.log("Auto-login successful:", loginResponse);
+  //         console.log("Auto-login successful:", loginResponse);
           
-          if (loginResponse.data && loginResponse.data.data && loginResponse.data.data.user) {
-            // Update user context with authenticated user data
-            updateUser(loginResponse.data.data.user);
+  //         if (loginResponse.data && loginResponse.data.data && loginResponse.data.data.user) {
+  //           // Update user context with authenticated user data
+  //           updateUser(loginResponse.data.data.user);
             
-            toast.success("Account created successfully!");
+  //           toast.success("Account created successfully!");
             
-            // Navigate after a small delay to ensure context is updated
-            setTimeout(() => {
-              navigate("/onboarding");
-            }, 100);
-          }
-        } catch (loginError) {
-          console.error("Auto-login failed:", loginError);
-          // Fall back to using the registration data
-          if (response.data && response.data.data) {
-            updateUser(response.data.data);
-            toast.success("Signup successful!");
-            navigate("/onboarding");
-          }
-        }
-      } 
-    } catch (error) {
-      if (error?.response?.data?.message) {
-        setError(error.response.data.message);  
-      } else {
-        console.error("Signup error:", error);
-        setError("Something went wrong. Please try again");
-      }
-    } finally {
-      setIsPending(false);
-    }
-    console.log('Signup data:', signUpData);
-  }
+  //           // Navigate after a small delay to ensure context is updated
+  //           setTimeout(() => {
+  //             navigate("/onboarding");
+  //           }, 100);
+  //         }
+  //       } catch (loginError) {
+  //         console.error("Auto-login failed:", loginError);
+  //         // Fall back to using the registration data
+  //         if (response.data && response.data.data) {
+  //           updateUser(response.data.data);
+  //           toast.success("Signup successful!");
+  //           navigate("/onboarding");
+  //         }
+  //       }
+  //     } 
+  //   } catch (error) {
+  //     if (error?.response?.data?.message) {
+  //       setError(error.response.data.message);  
+  //     } else {
+  //       console.error("Signup error:", error);
+  //       setError("Something went wrong. Please try again");
+  //     }
+  //   } finally {
+  //     setIsPending(false);
+  //   }
+  //   console.log('Signup data:', signUpData);
+  // }
+
+  const handleSignup = (e)=>{
+    e.preventDefault();
+    signUpMutation(signUpData);
+  };
+
+
+
+
   return (
     <div className="h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gray-900">
       <div className="border border-green-400/25 flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-gray-800 rounded-xl shadow-lg overflow-hidden">
@@ -96,7 +118,7 @@ const SignUp = () => {
           {/* ERROR MESSAGE IF ANY */}
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
-              <span className="text-red-300">{error}</span>
+              <span className="text-red-300">{error.message}</span>
             </div>
           )}
 
@@ -175,7 +197,8 @@ const SignUp = () => {
                 >
                   {isPending ? (
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-white
+                       border-t-transparent rounded-full animate-spin"></div>
                       Loading...
                     </div>
                   ) : (

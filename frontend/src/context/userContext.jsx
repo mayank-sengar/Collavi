@@ -15,32 +15,24 @@ const UserProvider = ({children})=>{
         try{
             setLoading(true);
             const res = await axiosInstance.get(API_PATHS.AUTH.ME);
-            console.log("user context set", res);
+            console.log("user context set",res);
             if(isMounted) setUser(res.data.data || null);
         } 
-        catch(error){
-            console.error("Error fetching user:", error);
-            if(isMounted) setUser(null);
-        }
-        finally{
-            if (isMounted) setLoading(false);
-        }
-     };
+            catch{
+                if(isMounted) setUser(null);
+            }
+            finally{
+                if (isMounted) setLoading(false);
+            }
+        };
      fetchUser();
      //on unmounting
      return () => {isMounted = false};
     },[]);
 
 
-const updateUser = (newUser) => {
-    console.log("Updating user context with:", newUser);
-    setUser(newUser);
-};
-
-const clearUser = () => {
-    console.log("Clearing user context");
-    setUser(null);
-};
+const updateUser = (newUser) => setUser(newUser);
+const clearUser  = () => setUser(null);
 
 return (
     <UserContext.Provider value = {{user,loading, updateUser,clearUser}}>

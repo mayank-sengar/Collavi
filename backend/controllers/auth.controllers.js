@@ -33,22 +33,13 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with this email already registered");
     }
 
-    let avatarUrl = "";
-    if (req.file && req.file.path) {
-        const avatar = await uploadOnCloudinary(req.file.path);
-        if (!avatar) {
-            throw new ApiError(400, "Profile picture not uploaded");
-        }
-        if (avatar && avatar.url) {
-            avatarUrl = avatar.url;
-        }
-    }
+    
 
     const user = await User.create({
         fullName,
         email,
         password,
-        avatar: avatarUrl,
+      
     });
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -56,6 +47,9 @@ const registerUser = asyncHandler(async (req, res) => {
     if (!createdUser) {
         throw new ApiError(500, "Something went wrong while registering the user");
     }
+
+    // Generate tokens after successful registration
+    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id);
 
     //create here 
     try{
@@ -70,12 +64,17 @@ const registerUser = asyncHandler(async (req, res) => {
         console.log("Error creating Stream user:", error);
     }
 
+    const options = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+    };
 
-
-
-    return res.status(201).json(new ApiResponse(201, createdUser, "User registered Successfully"));
-
-
+    return res
+        .status(201)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(new ApiResponse(201, { user: createdUser, accessToken, refreshToken }, "User registered Successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -223,9 +222,21 @@ if(!fullName || !bio || !skills || !location){
     });
 }
 
+let avatarUrl = "";
+if (req.file && req.file.path) {
+    const avatar = await uploadOnCloudinary(req.file.path);
+    if (!avatar) {
+        return res.status(400).json({ message: "Profile picture not uploaded" });
+    }
+    if (avatar && avatar.url) {
+        avatarUrl = avatar.url;
+    }
+}
+
 const updatedUser = await User.findByIdAndUpdate(userId,{
     ...req.body,
     isOnboarded:true,
+    ...(avatarUrl && { avatar: avatarUrl }),
 },{new : true})
 
 

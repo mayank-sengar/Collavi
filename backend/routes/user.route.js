@@ -16,7 +16,7 @@ router.route('/friend-request/:id').post(sendFriendRequest);
 router.route('/friend-request/:id/accept').put(acceptFriendRequest);
 router.route('/friend-request/:id/reject').put(rejectFriendRequest);
 router.route('/friend-requests').get(getFriendRequests);
-router.route('/outgoing-friend-requests').get(getOutgoingFriendRequests);
+router.route('/otgoing-friend-requests').get(getOutgoingFriendRequests);
 
 
 export default router;

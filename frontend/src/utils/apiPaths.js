@@ -1,3 +1,5 @@
+import axiosInstance from "./axiosInstance";
+
 export const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8001" }`;
 
 
@@ -28,5 +30,21 @@ export const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || "http://localhost
 
 }
 
+export const signup = async (signupData) =>{
+    const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,signupData);
+    return response.data;
+}
+
+export const getauthUser = async ()=>{
+         const res = await axiosInstance.get(API_PATHS.AUTH.ME);
+         return res.data;
+}
+
+export const onBoardUser = async(userData) => {
+    const res =await axiosInstance.post(API_PATHS.AUTH.ONBOARD,
+        userData
+    );
+    return res.data;
+}
 
 export default API_PATHS;
