@@ -208,33 +208,57 @@ const logoutUser = asyncHandler(async(req,res)=>{
 const onBoardUser = asyncHandler( async (req,res)=>{
 const userId= req.user._id;
 
-const {fullName,bio,skills ,location} = req.body;
+//handling skill array 
+let skills = req.body['skills[]'] || req.body.skills || [];
+// skills comes as a single string, convert to array
+if (typeof skills === 'string') {
+    skills = [skills];
+}
 
-if(!fullName || !bio || !skills || !location){
+const {fullName,bio,location} = req.body;
+
+console.log("Received data:", { fullName, bio, skills, location }); 
+
+if(!fullName || !bio || !skills.length || !location){
     return res.status(400).json({
         message: "All fields are required",
         missingFields:[
             !fullName && "fullName not present",
             !bio && "bio not present",
-            !skills && "skills not present",
+            !skills.length && "skills not present",
             !location && "location not present"
         ].filter(Boolean),
     });
 }
+ 
 
 let avatarUrl = "";
 if (req.file && req.file.path) {
-    const avatar = await uploadOnCloudinary(req.file.path);
-    if (!avatar) {
-        return res.status(400).json({ message: "Profile picture not uploaded" });
+    console.log("File received:", req.file); // Debug log
+    try {
+        const avatar = await uploadOnCloudinary(req.file.path);
+        if (!avatar) {
+            console.log("Cloudinary upload failed - no response"); // Debug log
+            return res.status(400).json({ message: "Profile picture upload failed - Cloudinary error" });
+        }
+        if (avatar && avatar.url) {
+            avatarUrl = avatar.url;
+            console.log("Avatar uploaded successfully:", avatarUrl); // Debug log
+        }
+    } catch (error) {
+        console.error("Avatar upload error:", error); // Debug log
+        return res.status(400).json({ message: "Profile picture upload failed - " + error.message });
     }
-    if (avatar && avatar.url) {
-        avatarUrl = avatar.url;
-    }
+} else {
+    console.log("No file received - avatar is required"); // Debug log
+    return res.status(400).json({ message: "Profile picture is required" });
 }
 
 const updatedUser = await User.findByIdAndUpdate(userId,{
-    ...req.body,
+    fullName,
+    bio,
+    skills,
+    location,
     isOnboarded:true,
     ...(avatarUrl && { avatar: avatarUrl }),
 },{new : true})

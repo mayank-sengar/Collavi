@@ -1,52 +1,30 @@
 
-import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link} from 'react-router-dom';
 import signup4 from "../assets/signup4.png";
-import axiosInstance from '../utils/axiosInstance';
-import API_PATHS from '../utils/apiPaths';
 import { toast } from 'react-hot-toast';
-import { UserContext } from '../context/userContext.jsx';
-
-
+import {login} from '../utils/apiPaths.js'
+import { useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 const Login = () => {
   const [loginData, setLoginData] = useState({
     email: "",
     password: ""
   });
-  const [error, setError] = useState(null);
-  const [isPending, setIsPending] = useState(false);
-  const navigate = useNavigate();
-  const { updateUser } = useContext(UserContext);
+
+  const queryClient = useQueryClient();
+  const {mutate:loginMutation , isPending,error} = useMutation ({
+    mutationFn : login,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+
+    }
+  })
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null);
-    if (!loginData.email || !loginData.password) {
-      setError("All fields are required");
-      return;
-    }
-    setIsPending(true);
-    try {
-      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
-        email: loginData.email,
-        password: loginData.password,
-      });
-      if (response.status === 200 && response.data && response.data.data && response.data.data.user) {
-        updateUser(response.data.data.user);
-        toast.success("Login successful!");
-        setTimeout(() => {
-          navigate("/");
-        }, 100);
-      }
-    } catch (error) {
-      if (error?.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError("Something went wrong. Please try again");
-      }
-    } finally {
-      setIsPending(false);
-    }
+   loginMutation(loginData);
   };
 
 

@@ -9,6 +9,7 @@ import CallPage from './pages/CallPage.jsx';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PageLoader from './components/PageLoader.jsx';
 import useAuthUser from './hooks/useAuthUser.jsx';
+import Layout from './components/Layout.jsx';
 function App() {
   // const { user, loading } = useContext(UserContext);
 
@@ -20,7 +21,10 @@ function App() {
   return (
     <div className='h-screen' data-theme="dark">
       <Routes>
-      <Route path="/" element={  authUser && isOnboarded ? (<HomePage />) 
+      <Route path="/" element={  authUser && isOnboarded ?
+      <Layout showSidebar={true}> 
+      <HomePage />
+      </Layout>
       : !authUser ? (<Navigate to="/login"/>) : (<OnBoarding /> )}/>
         <Route path='/login' element={!authUser ? <Login /> : <Navigate to="/"/>} />
         <Route path='/signup' element={!authUser ? <SignUp /> : <Navigate to="/"/>} />

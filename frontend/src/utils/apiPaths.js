@@ -1,6 +1,6 @@
 import axiosInstance from "./axiosInstance";
 
-export const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8001" }`;
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
 
 
  const API_PATHS={
@@ -33,6 +33,11 @@ export const BASE_URL = `${import.meta.env.VITE_BACKEND_URL || "http://localhost
 export const signup = async (signupData) =>{
     const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,signupData);
     return response.data;
+}
+
+export const login  = async(loginData) => {
+    const res  = await axiosInstance.post(API_PATHS.AUTH.LOGIN,loginData);
+    return res.data;
 }
 
 export const getauthUser = async ()=>{

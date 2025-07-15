@@ -6,7 +6,7 @@ import useAuthUser from '../hooks/useAuthUser';
 import { useState,useEffect} from 'react';
 import ProfilePhotoSelector from '../components/ProfilePhotoSelector';
 import CountriesList from '../components/CountriesList';
-import SKILLS from '../data/skills';
+;
 const OnBoarding = () => {
   const {authUser} = useAuthUser();
   const [userDetails,setUserDetails] = useState({
@@ -31,7 +31,30 @@ const OnBoarding = () => {
 
    const handleSubmit = (e)=>{
     e.preventDefault();
-    onBoardMutation(userDetails);
+    
+    const formData = new FormData();
+    formData.append('fullName', userDetails.fullName);
+    formData.append('bio', userDetails.bio); 
+//skills
+    userDetails.skills.map(skill => {
+      formData.append('skills[]', skill);
+    });
+    
+    formData.append('location', userDetails.location);
+    
+    if (image && image instanceof File) {
+      formData.append('avatar', image);
+      console.log('Avatar file attached:', image.name); // Debug log
+    } else {
+      console.log('No valid avatar file to upload'); // Debug log
+    }
+    
+    // Debug: Log all FormData entries
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+    
+    onBoardMutation(formData);
   };
 
     const [image, setImage] = useState(null);

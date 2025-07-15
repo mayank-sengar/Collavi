@@ -1,13 +1,15 @@
+import dotenv from 'dotenv';
+
+// Configure dotenv
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth.route.js';    
 import userRoutes from './routes/user.route.js'
 import connectDB from './config/db.js';
 import chatRoutes from './routes/chat.route.js'
-
-dotenv.config();
 
 const app = express();
 app.use(cors({
