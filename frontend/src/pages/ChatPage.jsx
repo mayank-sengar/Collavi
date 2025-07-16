@@ -1,8 +1,11 @@
 import React from 'react'
-
+import Navbar from '../components/Navbar.jsx'
 const ChatPage = () => {
   return (
-    <div className="">ChatPage</div>
+    
+    <div className="">
+      <Navbar/>
+    </div>
   )
 }
 

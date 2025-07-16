@@ -2,11 +2,11 @@ import React from 'react'
 import { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import signup4 from "../assets/signup4.png"
-import { useNavigate } from 'react-router-dom'
-import axiosInstance from '../utils/axiosInstance';
-import API_PATHS from '../utils/apiPaths';
-import { toast } from 'react-hot-toast';
-import { UserContext } from '../context/userContext.jsx';
+// import { useNavigate } from 'react-router-dom'
+// import axiosInstance from '../utils/axiosInstance';
+// import API_PATHS from '../utils/apiPaths';
+// import { toast } from 'react-hot-toast';
+// import { UserContext } from '../context/userContext.jsx';
 import { useQueryClient } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import {signup} from "../utils/apiPaths.js"

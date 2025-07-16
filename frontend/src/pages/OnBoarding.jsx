@@ -42,17 +42,13 @@ const OnBoarding = () => {
     
     formData.append('location', userDetails.location);
     
-    if (image && image instanceof File) {
+    if (image) {
       formData.append('avatar', image);
-      console.log('Avatar file attached:', image.name); // Debug log
+      // console.log('Avatar file attached:', image); 
     } else {
-      console.log('No valid avatar file to upload'); // Debug log
+      console.log('No valid avatar file to upload');
     }
-    
-    // Debug: Log all FormData entries
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
+ 
     
     onBoardMutation(formData);
   };

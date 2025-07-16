@@ -41,14 +41,49 @@ export const login  = async(loginData) => {
 }
 
 export const getauthUser = async ()=>{
+    try{
          const res = await axiosInstance.get(API_PATHS.AUTH.ME);
          return res.data;
+    }
+    catch(error){
+        console.log("Error in fetching user details ",error);
+        return null;
+    }
 }
 
 export const onBoardUser = async(userData) => {
     const res =await axiosInstance.post(API_PATHS.AUTH.ONBOARD,
         userData
     );
+    return res.data;
+}
+
+export const logout = async() => {
+    const res = await axiosInstance.post(API_PATHS.AUTH.LOGOUT);
+    return res.data;
+}
+
+
+export const getUserFriends = async () => {
+    const res = await axiosInstance.get(API_PATHS.USER.FRIENDS);
+    return res.data;
+};
+
+
+export const getRecommendedUsers = async () => {
+    const res = await axiosInstance.get(API_PATHS.USER.RECOMMENDED);
+    return res.data;
+};
+
+export const getOutgoingFriendRequests = async () => {
+    const res = await axiosInstance.get(API_PATHS.USER.OUTGOING_FRIEND_REQUESTS);
+    return res.data;
+};
+
+
+
+export const sendFriendRequest = async (userId) => {
+    const res = await axiosInstance.post(`/users/friend-request/${userId}`);
     return res.data;
 }
 

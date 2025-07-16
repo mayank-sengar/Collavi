@@ -232,7 +232,7 @@ if(!fullName || !bio || !skills.length || !location){
 }
  
 
-let avatarUrl = "";
+let avatarUrl = "https://res.cloudinary.com/dtppemevc/image/upload/v1752562955/fpyaad30qwksngqmmonw.png";
 if (req.file && req.file.path) {
     console.log("File received:", req.file); // Debug log
     try {
@@ -254,14 +254,18 @@ if (req.file && req.file.path) {
     return res.status(400).json({ message: "Profile picture is required" });
 }
 
-const updatedUser = await User.findByIdAndUpdate(userId,{
-    fullName,
-    bio,
-    skills,
-    location,
-    isOnboarded:true,
-    ...(avatarUrl && { avatar: avatarUrl }),
-},{new : true})
+const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+        fullName,
+        bio,
+        skills,
+        location,
+        isOnboarded: true,
+        avatar: avatarUrl, 
+    },
+    { new: true }
+);
 
 
 if(!updatedUser) return res.status(404).json({message:"User not found"});

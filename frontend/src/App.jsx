@@ -21,6 +21,7 @@ function App() {
   return (
     <div className='h-screen' data-theme="dark">
       <Routes>
+        
       <Route path="/" element={  authUser && isOnboarded ?
       <Layout showSidebar={true}> 
       <HomePage />
