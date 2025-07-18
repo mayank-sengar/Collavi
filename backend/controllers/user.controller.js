@@ -10,14 +10,16 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
     if (!currentUser) {
         throw new ApiError(404, "User not found");
     }
+
     
-    const recommendedUser  = await User.find({
-        $and:[
-           {$ne : currentUserId},//exclude current user
-           {$nin : currentUser.friend},//exclude current user's friends
-           {isOnboarded: true}
-        ]
-    })
+    const recommendedUser = await User.find({
+        _id: { 
+            $ne: currentUserId,           // exclude current user
+            $nin: currentUser.friend      // exclude current user's friends
+        },
+        isOnboarded: true,
+        skills: { $in: currentUser.skills } // match users who have at least one skill in common
+    }).select("fullName avatar location skills bio");
 
     if (recommendedUser.length === 0) {
         return res.status(200).json(new ApiResponse(200, [], "No recommended users found"));
@@ -116,19 +118,19 @@ const acceptFriendRequest = asyncHandler(async (req, res) => {
 
 const getFriendRequests = asyncHandler ( async (req,res) => {
   const incommingRequest = await FriendRequest.find(
-    {recipent : req.user._id,
+    {recipient : req.user._id,
      status: "pending",
     }
   ).populate("sender","fullName avatar skills location");
 
   const acceptedRequest = await FriendRequest.find(
-     {recipent : req.user._id,
-     status: "pending",
+     {recipient : req.user._id,
+     status: "accepted",
     }
   ).populate("sender","fullName avatar skills location");
 
   return res.status(200).json(new ApiResponse(200,{incommingRequest,acceptedRequest},
-    "Incomming and accepted requests fetched successfully "
+    "Incoming and accepted requests fetched successfully "
   ))
 });
 const getOutgoingFriendRequests= asyncHandler(async(req,res)=>{
@@ -137,10 +139,10 @@ const getOutgoingFriendRequests= asyncHandler(async(req,res)=>{
             sender : req.user._id,
             status: "pending"
         }
-     ).populate("recipent","fullName avatar skills location")
+     ).populate("recipient","fullName avatar skills location")
 
 
-     return res.status(200).json(new ApiResponse(200,outgoingRequest,
+     return res.status(200).json(new ApiResponse(200,outgoingRequests,
      "Outgoing requests fetched successfully"
   ))
 });

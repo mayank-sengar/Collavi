@@ -19,7 +19,7 @@ function App() {
 
     if(isLoading ) return <PageLoader/>
   return (
-    <div className='h-screen' data-theme="dark">
+    <div className='h-screen bg-gray-900 text-white'>
       <Routes>
         
       <Route path="/" element={  authUser && isOnboarded ?

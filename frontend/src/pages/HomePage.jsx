@@ -5,6 +5,10 @@ import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { UserIcon } from 'lucide-react';
+import PageLoader from '../components/PageLoader';
+import FriendCard from '../components/FriendCard';
+import {Users} from 'lucide-react'
+import { UsersIcon } from 'lucide-react';
 const HomePage = () => {
   const queryClient = useQueryClient();
   //to prevent sending friend requests to those users which have a pending friend request
@@ -51,12 +55,34 @@ const HomePage = () => {
       
       <div className="">
        <Link to="/notifications" className="flex items-center p-2 rounded-full border-amber-100 border-2 gap-2">
-         <UserIcon className="size-4"/> 
+         <UsersIcon className="size-4"/> 
          <span>Friend Requests</span>
        </Link>
       </div>
-
     </div>
+
+    {/* {loadingFriends  ?  (
+     <PageLoader/>
+     ):(
+      friend.length === 0 ? (<p 
+      className='text-3xl ml-7 pt-8 text-green-600 font-bold flex justify-center'>No Friends yet</p>) : 
+      (
+        <div>
+        {friend && friend.map((frnd)=> { 
+          <div>
+            <FriendCard key={frnd.id} friend={frnd} />
+            </div>
+        })}
+        </div>
+      )
+     )} */}    <div className="flex flex-wrap gap-6 p-6 justify-center">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <FriendCard key={i} />
+      ))}
+    </div>
+
+
+
     </>
   )
 }

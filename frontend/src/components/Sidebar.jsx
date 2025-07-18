@@ -9,36 +9,36 @@ const Sidebar = () => {
     const {authUser} = useAuthUser();
     const currentPath = useLocation().pathname;
   return (
-    <aside className="w-64 bg-base-200 border-r
-     border-base-300 hidden lg:flex flex-col h-screen sticky
+    <aside className="w-64 bg-gray-800 border-r
+     border-gray-700 hidden lg:flex flex-col h-screen sticky
      top-0">
       <Link to='/' className='p-4 flex justify-center'>
              <span  className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-500 tracking-wider">
               Collavi
             </span>
       </Link>
-      <nav className="flex-1  space-y-3  ">
+      <nav className="flex-1 px-2 py-4 space-y-2">
         <Link
         to='/'
-        className={`btn btn-ghost justify-start w-full gap-3
-        px-3  ${currentPath == "/" ? "btn-active" : ""}`}>
-        <HomeIcon className="" />
+        className={`px-4 py-3 rounded-lg flex items-center gap-3 w-full transition-colors duration-200 hover:bg-gray-700 
+        ${currentPath == "/" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
+        <HomeIcon className="w-5 h-5" />
         <span>Home</span>
         </Link>
 
         <Link
         to='/friends'
-        className={`btn btn-ghost justify-start w-full gap-3
-        px-3  ${currentPath == "/friends" ? "btn-active" : ""}`}>
-        <User className="" />
-        <span>Friend</span>
+        className={`px-4 py-3 rounded-lg flex items-center gap-3 w-full transition-colors duration-200 hover:bg-gray-700 
+        ${currentPath == "/friends" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
+        <User className="w-5 h-5" />
+        <span>Friends</span>
         </Link>
 
         <Link
         to='/notifications'
-        className={`btn btn-ghost justify-start w-full gap-3
-        px-3  ${currentPath == "/notifications" ? "btn-active" : ""}`}>
-        <BellIcon className="" />
+        className={`px-4 py-3 rounded-lg flex items-center gap-3 w-full transition-colors duration-200 hover:bg-gray-700 
+        ${currentPath == "/notifications" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
+        <BellIcon className="w-5 h-5" />
         <span>Notifications</span>
         </Link>
 
@@ -46,10 +46,10 @@ const Sidebar = () => {
 
       </nav>
       
-        <div className="p-4 border-t border-base-300 mt-auto">
+        <div className="p-4 border-t border-gray-700 mt-auto">
           <div className="flex flex-row justify-start items-center gap-3">
-          <div className="avatar">
-            <div className="w-10 h-10 rounded-full">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-full overflow-hidden">
               <img src={authUser?.avatar} alt="Profile pic" className="w-full h-full object-cover"/>
             </div>
           </div>
