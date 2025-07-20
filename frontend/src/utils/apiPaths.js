@@ -46,7 +46,10 @@ export const getauthUser = async ()=>{
          return res.data;
     }
     catch(error){
-        console.log("Error in fetching user details ",error);
+        // Don't log 401 errors (unauthorized) as they're expected when not logged in
+        if (error.response?.status !== 401) {
+            console.log("Error in fetching user details ",error);
+        }
         return null;
     }
 }
@@ -83,7 +86,7 @@ export const getOutgoingFriendRequests = async () => {
 
 
 export const sendFriendRequest = async (userId) => {
-    const res = await axiosInstance.post(`/users/friend-request/${userId}`);
+    const res = await axiosInstance.post(API_PATHS.USER.SEND_FRIEND_REQUEST(userId));
     return res.data;
 }
 

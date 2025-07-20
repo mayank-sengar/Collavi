@@ -15,9 +15,18 @@ const Login = () => {
   const queryClient = useQueryClient();
   const {mutate:loginMutation , isPending,error} = useMutation ({
     mutationFn : login,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Login successful:", data);
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
-
+      // You might want to redirect here based on user onboarding status
+      // if (data.user?.isOnboarded) {
+      //   navigate('/home');
+      // } else {
+      //   navigate('/onboard');
+      // }
+    },
+    onError: (error) => {
+      console.log("Login error:", error.response?.data?.message || error.message);
     }
   })
 
@@ -47,17 +56,17 @@ const Login = () => {
                 <svg className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <span className="text-red-300">{error}</span>
+                <span className="text-red-300">{error?.message || error?.response?.data?.message || 'An error occurred'}</span>
               </div>
               {/* Show help text for specific errors */}
-              {error.toLowerCase().includes("not registered") && (
+              {(error?.message || error?.response?.data?.message || '').toLowerCase().includes("not registered") && (
                 <div className="mt-2 text-xs text-red-300/80 pl-7">
                   <Link to="/signup" className="text-red-300 underline hover:text-red-200">
                     Create a new account instead
                   </Link>
                 </div>
               )}
-              {error.toLowerCase().includes("incorrect password") && (
+              {(error?.message || error?.response?.data?.message || '').toLowerCase().includes("incorrect password") && (
                 <div className="mt-2 text-xs text-red-300/80 pl-7">
                   Forgot your password? Contact support.
                 </div>

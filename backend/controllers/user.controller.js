@@ -33,13 +33,13 @@ const getMyFriends = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
     const currentuser = await User.findById(currentUserId)
-    .select("friends")// Include only the 'friends' field from User
-    .populate("friends", "fullName avatar location skills bio"); // Populate 'friends' field and return only these subfields
+    .select("friend")// Include only the 'friend' field from User
+    .populate("friend", "fullName avatar location skills bio"); // Populate 'friend' field and return only these subfields
 
    
-    // const friends = currentuser.friends;
+    // const friends = currentuser.friend;
 
-    // if (friends.length === 0) {
+    // if (friend.length === 0) {
     //     return res.status(200).json(new ApiResponse("No friends found", []));
     // }
 
@@ -49,8 +49,12 @@ const getMyFriends = asyncHandler(async (req, res) => {
 const sendFriendRequest = asyncHandler(async (req, res) => {
     const senderId = req.user._id;
     const recipientId = req.params.id;
+    
+    console.log("senderId:", senderId);
+    console.log("recipientId:", recipientId);
+    
     //prevent self friend request
-    if (senderId === recipientId) {
+    if (senderId.toString() === recipientId) {
         throw new ApiError(400, "You cannot send a friend request to yourself");
     }
 
@@ -59,6 +63,10 @@ const sendFriendRequest = asyncHandler(async (req, res) => {
     }
 
     const recipient = await User.findById(recipientId);
+    
+    if (!recipient) {
+        throw new ApiError(404, "User not found");
+    }
 
     //if user is already friends
     if (recipient.friend.includes(senderId)) {

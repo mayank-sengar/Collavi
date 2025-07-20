@@ -19,4 +19,5 @@ router.route('/friend-requests').get(getFriendRequests);
 router.route('/outgoing-friend-requests').get(getOutgoingFriendRequests);
 
 
+
 export default router;
