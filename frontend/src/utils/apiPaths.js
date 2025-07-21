@@ -3,6 +3,7 @@ import axiosInstance from "./axiosInstance";
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
 
 
+
  const API_PATHS={
     AUTH:{
         // Authentication routes from /api/auth
@@ -90,4 +91,18 @@ export const sendFriendRequest = async (userId) => {
     return res.data;
 }
 
+export const acceptFriendRequest = async (reqId) => {
+    const res = await axiosInstance.put(API_PATHS.USER.ACCEPT_FRIEND_REQUEST(reqId));
+    return res.data;
+}
+
+export const incommingFriendRequest = async () =>{
+    const res = await axiosInstance.get(API_PATHS.USER.FRIEND_REQUESTS);
+    return res.data;
+}
+
+export const getStreamToken =async ()=>{
+    const res = await axiosInstance.get(API_PATHS.CHAT.STREAM_TOKEN);
+    return res.data;
+}
 export default API_PATHS;

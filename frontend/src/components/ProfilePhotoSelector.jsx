@@ -6,6 +6,7 @@ import { useRef } from 'react';
 function ProfilePhotoSelector({
     image,setImage,preview,setPreview
 }) {
+   
 
     const inputRef = useRef(null);
     const [previewUrl,setPreviewUrl] = useState(null);

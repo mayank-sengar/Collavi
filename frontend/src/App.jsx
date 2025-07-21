@@ -22,16 +22,33 @@ function App() {
     <div className='h-screen bg-gray-900 text-white'>
       <Routes>
         
-      <Route path="/" element={  authUser && isOnboarded ?
-      <Layout showSidebar={true}> 
-      <HomePage />
-      </Layout>
-      : !authUser ? (<Navigate to="/login"/>) : (<OnBoarding /> )}/>
+    <Route path="/" element={
+      authUser && isOnboarded ? (
+        <Layout showSidebar={true}>
+          <HomePage />
+        </Layout>
+      ) : !authUser ? (
+        <Navigate to="/login"/>
+      ) : (
+        <OnBoarding />
+      )
+    }/>
         <Route path='/login' element={!authUser ? <Login /> : <Navigate to="/"/>} />
         <Route path='/signup' element={!authUser ? <SignUp /> : <Navigate to="/"/>} />
-        <Route path='/chat' element={authUser ? <ChatPage /> : <Navigate to="/login"/>}/>
+
+        <Route path='/chat/:id' element={authUser && isOnboarded ?
+            <Layout showSidebar={false}>
+           <ChatPage /> 
+           </Layout>
+           : <Navigate to="/login"/>}/>
         <Route path='/call' element={authUser ? <CallPage /> : <Navigate to="/login"/>}/>
-        <Route path='/notifications' element={authUser ? <Notifications /> : <Navigate to="/login"/>} />
+        <Route path='/notifications' element={
+          authUser ? 
+        <Layout showSidebar={true}> 
+        <Notifications /> 
+        </Layout> 
+          : <Navigate to="/login"/> 
+          }/>
         <Route path='/onboarding' element={authUser && !isOnboarded ? (<OnBoarding />) : (authUser && isOnboarded) ?<HomePage/>: (<Navigate to="/login"/>) } />
       </Routes>
     </div>

@@ -9,9 +9,15 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { logout } from '../utils/apiPaths';
 const Navbar = () => {
+    const generateInitialPfp = (name) => {
+    const encodedName = encodeURIComponent(name || '');
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${encodedName}&chars=2&radius=50`;
+  };
   const {authUser} = useAuthUser();
   const currentPath = useLocation().pathname;
-  const isChatPage =  currentPath== "/chat";
+  // console.log(currentPath);
+  const isChatPage = currentPath.startsWith("/chat/");
+  // console.log(isChatPage);
   const navigate = useNavigate();
 
   const queryClient =useQueryClient();
@@ -35,11 +41,13 @@ const Navbar = () => {
     <nav className="bg-black py-3 flex justify-between items-center px-4">
        <div className="flex items-center gap-2">
               {isChatPage &&
+              <Link to="/homepage">
             <span className="text-3xl font-bold font-mono bg-clip-text text-transparent 
             bg-gradient-to-r from-green-400 to-emerald-500 tracking-wider">
               Collavi
             </span>
-}
+            </Link>
+         }
           
        </div>
            
@@ -51,7 +59,7 @@ const Navbar = () => {
           </Link>
             
             <div className="w-10 h-10 rounded-full overflow-hidden">
-           <img src={authUser?.avatar} alt="Profile pic" className="w-full h-full object-cover"/>
+           <img src={authUser?.avatar || generateInitialPfp(authUser?.fullName)} alt="Profile pic" className="w-full h-full object-cover"/>
            </div>
 
            <button onClick={handleLogout} className="cursor-pointer">

@@ -36,8 +36,8 @@ const HomePage = () => {
        mutationFn: sendFriendRequest,
        onSuccess: () => queryClient.invalidateQueries({queryKey : ["outgoingFriendReqs"]}),
        onError: (error) => {
-         console.error("Friend request error:", error);
-         console.error("Error response:", error?.response?.data);
+        //  console.error("Friend request error:", error);
+        //  console.error("Error response:", error?.response?.data);
          alert(error?.response?.data?.message || error?.message || "Failed to send friend request");
        }
   })   
@@ -77,7 +77,7 @@ const HomePage = () => {
       !friend?.data?.friend || friend?.data?.friend?.length === 0 ? (<p 
       className='text-center text-lg text-gray-500 mt-3 flex justify-center'>No Friends yet</p>) : 
       (
-        <div className="flex flex-wrap gap-6 p-6 justify-center">
+        <div className="flex flex-wrap gap-6 p-6 justify-left ml-7">
         {friend?.data?.friend?.map((frnd)=> (
           <div key={frnd._id}>
             <FriendCard friend={frnd} />
@@ -101,7 +101,7 @@ const HomePage = () => {
 {loadingUsers ? (
   <PageLoader />
 ) : recommendedUser?.data && recommendedUser?.data?.length > 0 ? (
-  <div className="flex flex-wrap gap-6 p-6 justify-center">
+  <div className="flex flex-wrap gap-6 p-6 justify-left  ml-7">
     {recommendedUser?.data?.map((user) => (
       <SendRequestCard  
         key={user._id}

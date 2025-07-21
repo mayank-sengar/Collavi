@@ -8,6 +8,11 @@ import { Bell } from 'lucide-react';
 const Sidebar = () => {
     const {authUser} = useAuthUser();
     const currentPath = useLocation().pathname;
+     const generateInitialPfp = (name) => {
+    const encodedName = encodeURIComponent(name || '');
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${encodedName}&chars=2&radius=50`;
+  };
+
   return (
     <aside className="w-64 bg-gray-800 border-r
      border-gray-700 hidden lg:flex flex-col h-screen sticky
@@ -49,8 +54,8 @@ const Sidebar = () => {
         <div className="p-4 border-t border-gray-700 mt-auto">
           <div className="flex flex-row justify-start items-center gap-3">
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 rounded-full overflow-hidden">
-              <img src={authUser?.avatar} alt="Profile pic" className="w-full h-full object-cover"/>
+            <div className="w-10 h-10 rounded-full  flex-shrink-0 overflow-hidden">
+              <img src={authUser?.avatar || generateInitialPfp(authUser?.fullName)} alt="Profile pic" className="w-full h-full object-cover"/>
             </div>
           </div>
           <div className="text-sm font-medium">
