@@ -41,9 +41,9 @@ function App() {
            <ChatPage /> 
            </Layout>
            : <Navigate to="/login"/>}/>
-        <Route path='/call' element={authUser ? <CallPage /> : <Navigate to="/login"/>}/>
+        <Route path='/call/:id' element={authUser && isOnboarded ? <CallPage /> : <Navigate to="/login"/>}/>
         <Route path='/notifications' element={
-          authUser ? 
+          authUser && isOnboarded ? 
         <Layout showSidebar={true}> 
         <Notifications /> 
         </Layout> 

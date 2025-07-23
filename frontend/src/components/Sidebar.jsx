@@ -32,7 +32,8 @@ const Sidebar = () => {
         </Link>
 
         <Link
-        to='/friends'
+        //todo
+        to='/'
         className={`px-4 py-3 rounded-lg flex items-center gap-3 w-full transition-colors duration-200 hover:bg-gray-700 
         ${currentPath == "/friends" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
         <User className="w-5 h-5" />

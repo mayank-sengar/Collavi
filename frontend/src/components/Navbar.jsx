@@ -41,7 +41,7 @@ const Navbar = () => {
     <nav className="bg-black py-3 flex justify-between items-center px-4">
        <div className="flex items-center gap-2">
               {isChatPage &&
-              <Link to="/homepage">
+              <Link to="/">
             <span className="text-3xl font-bold font-mono bg-clip-text text-transparent 
             bg-gradient-to-r from-green-400 to-emerald-500 tracking-wider">
               Collavi
