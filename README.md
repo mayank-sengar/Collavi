@@ -18,13 +18,13 @@ Collavi bridges the gap between professionals and learners by allowing users to:
 
 ## Features
 
-- ** Domain-Based Matching:** Discover users with similar skills and interests  
-- ** Real-Time Chat:** Instant messaging with Socket.io and persistent history  
-- ** Video Consultations:** One-click video calls powered by GetStream Video SDK  
-- ** Friend Network:** Send requests and build professional connections  
-- ** Knowledge Sharing:** Exchange insights, documents, and useful links  
-- ** Personalized Profiles:** Showcase your expertise, skills, and availability  
-- ** Notifications:** Real-time alerts for messages, calls, and requests  
+- **Domain-Based Matching:** Discover users with similar skills and interests  
+- **Real-Time Chat:** Instant messaging with Socket.io and persistent history  
+- **Video Consultations:** One-click video calls powered by GetStream Video SDK  
+- **Friend Network:** Send requests and build professional connections  
+- **Knowledge Sharing:** Exchange insights, documents, and useful links  
+- **Personalized Profiles:** Showcase your expertise, skills, and availability  
+- **Notifications:** Real-time alerts for messages, calls, and requests  
 
 ---
 
