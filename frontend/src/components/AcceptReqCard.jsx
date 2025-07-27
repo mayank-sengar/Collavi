@@ -1,7 +1,8 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
 
-const AcceptReqCard = ({ request, acceptFriendRequest, isPending }) => {
+
+const AcceptReqCard = ({ request, acceptFriendRequest,rejectFriendRequest, isPending }) => {
   const friend = request?.sender; // Extract sender info from request
   
   const generateInitialPfp = (name) => {
@@ -68,6 +69,7 @@ const AcceptReqCard = ({ request, acceptFriendRequest, isPending }) => {
           {isPending ? 'Accepting...' : 'Accept Request'}
         </button>
         <button
+         onClick={()=> rejectFriendRequest(request._id)}
           disabled={isPending}
           className="flex-1 min-w-[120px] px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded-lg font-medium text-sm cursor-pointer whitespace-nowrap"
         >

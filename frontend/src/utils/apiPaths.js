@@ -96,6 +96,11 @@ export const acceptFriendRequest = async (reqId) => {
     return res.data;
 }
 
+export const rejectFriendRequest = async (reqId)=>{
+    const res=await axiosInstance.put(API_PATHS.USER.REJECT_FRIEND_REQUEST(reqId));
+    return res.data;
+}
+
 export const incommingFriendRequest = async () =>{
     const res = await axiosInstance.get(API_PATHS.USER.FRIEND_REQUESTS);
     return res.data;
@@ -105,4 +110,6 @@ export const getStreamToken =async ()=>{
     const res = await axiosInstance.get(API_PATHS.CHAT.STREAM_TOKEN);
     return res.data;
 }
+
+
 export default API_PATHS;

@@ -2,7 +2,7 @@ import React from 'react'
 import FriendCard from '../components/FriendCard'
 import AcceptReqCard from '../components/AcceptReqCard'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
-import { getOutgoingFriendRequests, acceptFriendRequest as acceptFriendRequestAPI, incommingFriendRequest} from '../utils/apiPaths'
+import { getOutgoingFriendRequests, acceptFriendRequest as acceptFriendRequestAPI, incommingFriendRequest, rejectFriendRequest} from '../utils/apiPaths'
 
 const Notifications = () => {
   const queryClient = useQueryClient();
@@ -26,9 +26,20 @@ const Notifications = () => {
     },      
   });
 
+  const {mutate: rejectFriendRequestMutation} = useMutation({
+    mutationFn: rejectFriendRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["outgoingFriendReqs"]});
+      queryClient.invalidateQueries({queryKey: ["incommingFriendReqs"]});
+      queryClient.invalidateQueries({queryKey: ["friends"]});
+    },      
+  });
+
+
+
   return (
-    <div className="bg-gray-900 min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-gray-900 min-h-screen p-6 ">
+      <div className="max-w-4xl mx-auto ">
         <h1 className="text-2xl font-bold text-white mb-6">Friend Requests</h1>
         
         {/* Incoming Friend Requests */}
@@ -41,6 +52,7 @@ const Notifications = () => {
                   key={request._id} 
                   request={request}
                   acceptFriendRequest={acceptFriendRequestMutation} 
+                  rejectFriendRequest={rejectFriendRequestMutation}
                   isPending={isPending}
                 />
               ))}

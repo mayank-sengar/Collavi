@@ -59,7 +59,7 @@ const HomePage = () => {
     <>
   
     <div className="flex justify-between items-center p-4 ">
-      <div className="font-bold text-2xl pl-8">
+     <div className="font-bold text-2xl pl-8">
         Your Friends
       </div>
       

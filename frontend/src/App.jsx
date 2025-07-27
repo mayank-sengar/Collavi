@@ -10,6 +10,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import PageLoader from './components/PageLoader.jsx';
 import useAuthUser from './hooks/useAuthUser.jsx';
 import Layout from './components/Layout.jsx';
+import Friends from './pages/Friends.jsx';
 function App() {
   // const { user, loading } = useContext(UserContext);
 
@@ -49,6 +50,8 @@ function App() {
         </Layout> 
           : <Navigate to="/login"/> 
           }/>
+
+          <Route path='friends' element={authUser && isOnboarded ? <Layout showSidebar={true}><Friends/></Layout> : <Navigate to='/login'/>} />
         <Route path='/onboarding' element={authUser && !isOnboarded ? (<OnBoarding />) : (authUser && isOnboarded) ?<HomePage/>: (<Navigate to="/login"/>) } />
       </Routes>
     </div>
