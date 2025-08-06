@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import User from './user.model.js'
 const friendSchema = new mongoose.Schema({
     sender: {   
         type: mongoose.Schema.Types.ObjectId,
