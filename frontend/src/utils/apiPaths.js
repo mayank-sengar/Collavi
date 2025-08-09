@@ -12,11 +12,14 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
         REFRESH_TOKEN:"/api/auth/refresh-token", 
         LOGOUT : "/api/auth/logout",            
         ONBOARD : "/api/auth/onboard",          
-        ME: "/api/auth/me"                      
-    },
+        ME: "/api/auth/me",
+        
+    },     
     CHAT:{
         // Chat routes from /api/chat
-        STREAM_TOKEN: "/api/chat/token"         
+        GET_MESSAGE:(id)=> `/api/chat/get/${id}`,       
+        SEND_MESSAGE:(id)=> `/api/chat/send/${id}`,
+        FRIEND_DETAILS:(id)=> `/api/chat/friend-details/${id}`,                    
     },
     USER:{
         // User routes from /api/users
@@ -110,6 +113,27 @@ export const getStreamToken =async ()=>{
     const res = await axiosInstance.get(API_PATHS.CHAT.STREAM_TOKEN);
     return res.data;
 }
+
+export const getMessage = async(recipientId)=>{
+    const res=await axiosInstance.get(API_PATHS.CHAT.GET_MESSAGE(recipientId));
+    return res.data;
+}
+
+export const sendMessage = async(recipientId, message)=>{
+    const res =await axiosInstance.post(API_PATHS.CHAT.SEND_MESSAGE(recipientId), {
+        message
+    });
+    return res.data;
+}
+
+export const getFriendDetails = async(recipientId)=>{
+    const res=await axiosInstance.get(API_PATHS.CHAT.FRIEND_DETAILS(recipientId));
+    return res.data;
+}
+
+
+
+
 
 
 export default API_PATHS;

@@ -12,7 +12,7 @@ import {
   MessageList,
   Thread,
   Window,
- 
+  
 } from "stream-chat-react";
 import { StreamChat } from "stream-chat";
 import toast from "react-hot-toast";

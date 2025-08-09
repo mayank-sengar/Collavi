@@ -2,6 +2,7 @@ import React from 'react'
 import { getUserFriends } from '../utils/apiPaths';
 import {  useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom';
+import { MdMessage } from 'react-icons/md';
 const Friends = () => {
     
     const {data:userFriend=[]} = useQuery({

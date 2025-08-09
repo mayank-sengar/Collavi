@@ -24,65 +24,77 @@ const recipientId  = req.params.id;
 
 const {message} = req.body;
  
-let conversation=Conversation.findOne({
+let conversation = await Conversation.findOne({
     members : {
         $all : [senderId,recipientId]
     }
 });
 
 if(!conversation){
-    await Conversation.create(
+    conversation = await Conversation.create(
         {
             members:[senderId,recipientId],
+            messages: []
         }
     )
 }
 
-const newMessage = Message.create({
+const newMessage = await Message.create({
     sender:senderId,
     recipient:recipientId,
     message,
 });
 
 if(newMessage){
-    conversation.message.push(newMessage._id);
+    conversation.messages.push(newMessage._id);
 }
-
 
 //2 promises and both run parallely 
 await Promise.all([conversation.save(),newMessage.save()]);
 
-
-return res.status(200).json(new ApiResponse(200,"Message Sent Succesfully",newMessage));
-
+return res.status(200).json(new ApiResponse(200, newMessage, "Message Sent Successfully"));
 
  });
 
 const getMessage=asyncHandler(async(req,res)=>{
-   const senderId=req.params.id;
-   const recipientId=req.user._id;
+   const senderId=req.user._id;
+   const recipientId  = req.params.id;
 
-   let  conversation = await Conversation.findOne({
+   let conversation = await Conversation.findOne({
     members:{
         $all: [senderId,recipientId],
     }
-   }).populate("messages")
+   }).populate("messages");
 
    if(!conversation){
-    console.log("No messages to fetch");
-    return res.status(201).json([]);
+    return res.status(200).json(new ApiResponse(200, [], "No conversation found"));
    }
 
    const messages = conversation.messages;
 
-   if(messages){
-    return res.status(200).json(new ApiResponse(200,"Conversation successfully Loaded",messages));
-   }
+   return res.status(200).json(new ApiResponse(200, messages, "Conversation successfully loaded"));
 
 });
 
 
-export  {sendMessage,getMessage};
+const getFriendById = asyncHandler ( async (req,res)=>{
+      const friendId= req.body.id;
+      
+      if(!friendId){
+        throw new ApiError(400, "User ID is required");
+      }
+      const friend= User.findById(friendId).select("-password -refreshToken");
+
+        if(!friend){
+            throw new ApiError(404, "User not found");
+        }
+
+        return res.status(200).json(new ApiResponse(200, friend, "User details fetched successfully"));
+
+})
+
+
+export  {sendMessage,getMessage,getFriendById};
 
 
 

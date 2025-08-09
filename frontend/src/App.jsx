@@ -11,6 +11,7 @@ import PageLoader from './components/PageLoader.jsx';
 import useAuthUser from './hooks/useAuthUser.jsx';
 import Layout from './components/Layout.jsx';
 import Friends from './pages/Friends.jsx';
+import Chat from './pages/Chats.jsx'
 function App() {
   // const { user, loading } = useContext(UserContext);
 
@@ -39,7 +40,7 @@ function App() {
 
         <Route path='/chat/:id' element={authUser && isOnboarded ?
             <Layout showSidebar={false}>
-           <ChatPage /> 
+           <Chat/> 
            </Layout>
            : <Navigate to="/login"/>}/>
         <Route path='/call/:id' element={authUser && isOnboarded ? <CallPage /> : <Navigate to="/login"/>}/>
