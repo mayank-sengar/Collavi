@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 // import { generateStreamToken } from "../config/stream.js";
 import Message from "../models/message.model.js";
 import Conversation from "./../models/conversation.model.js";
+import User from "../models/user.model.js";
 
 // export const getStreamToken = asyncHandler(async (req, res) => {
 //     try {
@@ -22,7 +23,7 @@ const sendMessage = asyncHandler(async(req,res)=>{
 const senderId=req.user._id;
 const recipientId  = req.params.id;
 
-const {message} = req.body;
+const message = req.body.message;
  
 let conversation = await Conversation.findOne({
     members : {
@@ -78,19 +79,15 @@ const getMessage=asyncHandler(async(req,res)=>{
 
 
 const getFriendById = asyncHandler ( async (req,res)=>{
-      const friendId= req.body.id;
-      
+      const friendId= req.params.id;
       if(!friendId){
         throw new ApiError(400, "User ID is required");
       }
-      const friend= User.findById(friendId).select("-password -refreshToken");
-
-        if(!friend){
-            throw new ApiError(404, "User not found");
-        }
-
-        return res.status(200).json(new ApiResponse(200, friend, "User details fetched successfully"));
-
+      const friend = await User.findById(friendId).select("-password -refreshToken");
+      if(!friend){
+        throw new ApiError(404, "User not found");
+      }
+      return res.status(200).json(new ApiResponse(200, friend, "User details fetched successfully"));
 })
 
 
