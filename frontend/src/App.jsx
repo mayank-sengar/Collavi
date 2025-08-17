@@ -1,5 +1,5 @@
 import React from 'react'
-import ChatPage from './pages/ChatPage';
+import ChatPage from './pages/OldChatPage.jsx';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import Notifications  from './pages/Notifications';
