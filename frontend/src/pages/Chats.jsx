@@ -5,12 +5,22 @@ import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { getMessage,sendMessage,getFriendDetails } from '../utils/apiPaths';
-import Conversation from './../../../backend/models/conversation.model';
 import { VideoIcon } from 'lucide-react';
 import { Send } from 'lucide-react';
+import { useEffect,useRef } from 'react';
+import {io} from 'socket.io-client';
+import useAuthUser from './../hooks/useAuthUser';
 
+
+
+
+const SOCKET_URL="http://localhost:8001";
 
 const Chats = () => {
+  const  {authUser} = useAuthUser();
+const socket = useRef(null);
+
+
   const navigate =useNavigate();
   const queryClient = useQueryClient();
   const handleExit = ()=>{
@@ -42,9 +52,44 @@ const { data: friendDetails, isLoading: loadingFriend } = useQuery({
 });
 
 const handleSend= async()=>{
+
+  if(!messageInput.trim()) return;
+
+  socket.current.emit("sendMessage",{
+    sender:authUser._id,
+    recipient:recipientId,
+    message: messageInput,
+  })
+
   sendMessageMutation(messageInput);
   setMessageInput("");
 }
+
+
+useEffect (()=>{
+  //useRef() returns an object like { current: null }.
+  socket.current = io(SOCKET_URL,{
+    withCredentials: true,
+  })
+
+  socket.current.on("connect",()=>{
+    console.log("Connected to socket: ", socket.current.id);
+    //join room 
+     const roomId = [authUser._id, recipientId].sort().join("_");
+    socket.current.emit("joinRoom", roomId);
+  })
+
+  socket.current.on("newMessage",(msg)=>{
+    //refetch messages
+    queryClient.invalidateQueries({queryKey:[conversation,recipientId]});
+    console.log("New Message received ",msg);
+  })
+
+  return ()=>{
+    socket.current.disconnect();
+  }
+}
+,[recipientId,authUser._id])
 
 
 
@@ -113,6 +158,7 @@ const handleSend= async()=>{
           type="text"
           value={messageInput}
           onChange= {(e)=> {setMessageInput(e.target.value)} }
+          onKeyDown={(e)=>{ e.key=='Enter' ? handleSend(): null}}
           placeholder='Type a Message'
           className='w-full h-10 bg-gray-400 rounded-xl p-2'
           />

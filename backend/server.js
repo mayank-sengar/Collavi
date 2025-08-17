@@ -13,8 +13,8 @@ import chatRoutes from './routes/chat.route.js'
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {app, server, io} from './SocketIO/server.js'; 
 
-const app = express();
 
 // ES module compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +40,6 @@ app.use('/api/chat',chatRoutes);
 app.use('/api/user',userRoutes);
 
 
-app.listen(process.env.PORT || 8000, () => {
+server.listen(process.env.PORT || 8000, () => {
     console.log(`Server is running on port ${process.env.PORT || 8000}`);
 }   );
