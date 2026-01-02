@@ -48,10 +48,13 @@ const getMyFriends = asyncHandler(async (req, res) => {
 
 const sendFriendRequest = asyncHandler(async (req, res) => {
     const senderId = req.user._id;
+
+    // Assume recipientId is the ID of the user you want to send a friend request to
+// in frontend => axios.post(`/api/user/friend-request/${recipientId}`)
     const recipientId = req.params.id;
     
-    console.log("senderId:", senderId);
-    console.log("recipientId:", recipientId);
+    // console.log("senderId:", senderId);
+    // console.log("recipientId:", recipientId);
     
     //prevent self friend request
     if (senderId.toString() === recipientId) {
@@ -165,7 +168,7 @@ const rejectFriendRequest = asyncHandler (async (req,res) => {
 
     if(request.status == "pending"){
      request.status= "rejected";
-     await request.save();
+     await request.save({validateBeforeSave:false});
     }
     else{
         throw new ApiError(400,"No valid friend request");

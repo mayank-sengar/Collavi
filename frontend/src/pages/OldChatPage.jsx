@@ -52,7 +52,7 @@
 //         throw new Error("Stream token is missing");
 //       }
 
-//       const client = await StreamChat.getInstance(STEAM_API_KEY)
+//       const client = await StreamChat.getInstance(STEAM_API_KEY) 
 // console.log("client",client)
 //       await client.connectUser(
 //         {

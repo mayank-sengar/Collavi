@@ -1,8 +1,5 @@
 import dotenv from 'dotenv';
-
-// Configure dotenv
 dotenv.config();
-
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -25,8 +22,10 @@ if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true });
 }
 app.use(cors({
+  //whitelisting
     origin: `${process.env.FRONTEND_URL || "http://localhost:5173"}`, 
     credentials: true, //frontend to send requests 
+    //backend also allows cookies / tokens to be sent across origins.
 }));
 
 
@@ -38,6 +37,25 @@ connectDB();
 app.use('/api/auth',authRoutes);
 app.use('/api/chat',chatRoutes);
 app.use('/api/user',userRoutes);
+
+// Global error handler
+app.use((err, req, res, next) => {
+    // If the error is an instance of ApiError, use its status and message
+    if (err && err.statusCode) {
+        return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+            data: null
+        });
+    }
+    // Otherwise, fallback to generic 500
+    res.status(500).json({
+        success: false,
+        message: err?.message || "Internal Server Error",
+        data: null
+    });
+});
+
 
 
 server.listen(process.env.PORT || 8000, () => {

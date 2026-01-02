@@ -18,8 +18,8 @@ const SOCKET_URL="http://localhost:8001";
 
 const Chats = () => {
   const  {authUser} = useAuthUser();
+  //Ref used so that socket is not reinitialized by the rerenders caused due to messages and conversations 
 const socket = useRef(null);
-
 
   const navigate =useNavigate();
   const queryClient = useQueryClient();
@@ -51,16 +51,18 @@ const { data: friendDetails, isLoading: loadingFriend } = useQuery({
   enabled: !!recipientId
 });
 
+//handle when messafe is to be sent 
 const handleSend= async()=>{
 
   if(!messageInput.trim()) return;
 
+  //socket sends the message 
   socket.current.emit("sendMessage",{
     sender:authUser._id,
     recipient:recipientId,
     message: messageInput,
   })
-
+//to store the message in db also 
   sendMessageMutation(messageInput);
   setMessageInput("");
 }
@@ -68,10 +70,11 @@ const handleSend= async()=>{
 
 useEffect (()=>{
   //useRef() returns an object like { current: null }.
+  //socket is conencted to backend io 
   socket.current = io(SOCKET_URL,{
     withCredentials: true,
   })
-
+//when connection is made 
   socket.current.on("connect",()=>{
     console.log("Connected to socket: ", socket.current.id);
     //join room 

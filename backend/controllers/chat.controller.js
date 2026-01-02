@@ -27,6 +27,8 @@ const message = req.body.message;
  
 let conversation = await Conversation.findOne({
     members : {
+        //In MongoDB, the 'all' operator is independent of sequence.
+        //as in db conversation can have members in any order
         $all : [senderId,recipientId]
     }
 });

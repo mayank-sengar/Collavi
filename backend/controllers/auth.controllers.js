@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { upsertStreamUser } from "../config/stream.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
+    //using try-catch instead of asyncHandler util
     try {
         const user = await User.findById(userId);
         const accessToken = user.generateAccessToken();
@@ -29,6 +30,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
         throw new ApiError(409, "User with this email already registered");
     }
@@ -39,7 +41,6 @@ const registerUser = asyncHandler(async (req, res) => {
         fullName,
         email,
         password,
-      
     });
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -52,29 +53,30 @@ const registerUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id);
 
     //create here 
-    try{
-    await upsertStreamUser({
-        id:createdUser._id.toString(),
-        name: createdUser.fullName,
-        image:createdUser.avatar || "",       
-    });
-    console.log(`Stream user created for ${createdUser.fullName}`);
-    }
-    catch(error){
-        console.log("Error creating Stream user:", error);
-    }
+    //Migrating  Stream User
+    // try{
+    // await upsertStreamUser({
+    //     id:createdUser._id.toString(),
+    //     name: createdUser.fullName,
+    //     image:createdUser.avatar || "",       
+    // });
+    // console.log(`Stream user created for ${createdUser.fullName}`);
+    // }
+    // catch(error){
+    //     console.log("Error creating Stream user:", error);
+    // }
 
     const options = {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
+        httpOnly: true, // can't be accesed through javascript in browser 
+        secure: true, //only https sites are allowed
+        sameSite: "None", // different site access as CORS whitelisting is done for frontend and backend urls
     };
 
     return res
         .status(201)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json(new ApiResponse(201, { user: createdUser, accessToken, refreshToken }, "User registered Successfully"));
+        .json(new ApiResponse(201, { user: createdUser }, "User registered Successfully"));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -98,6 +100,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id);
 
+
+
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
     const options = {
@@ -115,8 +119,7 @@ const loginUser = asyncHandler(async (req, res) => {
                 200,
                 {
                     user: loggedInUser,
-                    accessToken,
-                    refreshToken,
+
                 },
                 "User logged in successfully"
             )
@@ -146,10 +149,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Invalid refresh token")
         }
     
-        if (incomingRefreshToken !== user?.refreshToken) {
-            throw new ApiError(401, "Refresh token is expired or used")
-            
-        }
     
         const options = {
             httpOnly: true,
@@ -183,15 +182,17 @@ const logoutUser = asyncHandler(async(req,res)=>{
     if(!user){
         throw new ApiError(401, "unauthorized request");
     }
-    await User.findByIdAndUpdate(user._id,
-        {
-           $unset:{
-            refreshToken: 1
-           }
-        },{
-            new:true
-        }
-    )
+
+    //not storing refresh token in User model
+    // await User.findByIdAndUpdate(user._id,
+    //     {
+    //        $unset:{
+    //         refreshToken: 1
+    //        }
+    //     },{
+    //         new:true
+    //     }
+    // )
 
     const options = {
         httpOnly:true,

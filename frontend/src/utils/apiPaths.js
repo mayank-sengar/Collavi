@@ -2,8 +2,6 @@ import axiosInstance from "./axiosInstance";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
 
-
-
  const API_PATHS={
     AUTH:{
         // Authentication routes from /api/auth
@@ -17,6 +15,7 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
     },     
     CHAT:{
         // Chat routes from /api/chat
+        //id of recipient 
         GET_MESSAGE:(id)=> `/api/chat/get/${id}`,       
         SEND_MESSAGE:(id)=> `/api/chat/send/${id}`,
         FRIEND_DETAILS:(id)=> `/api/chat/friend-details/${id}`,                    
@@ -24,8 +23,10 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
     USER:{
         // User routes from /api/users
         RECOMMENDED: "/api/user",                                   
-        FRIENDS: "/api/user/friends",                               
-        SEND_FRIEND_REQUEST:(id)=> `/api/user/friend-request/${id}`,                  
+        FRIENDS: "/api/user/friends",     
+        //id of recipient                    
+        SEND_FRIEND_REQUEST:(id)=> `/api/user/friend-request/${id}`,      
+        // request id             
         ACCEPT_FRIEND_REQUEST:(id)=> `/api/user/friend-request/${id}/accept`,        
         REJECT_FRIEND_REQUEST:(id)=> `/api/user/friend-request/${id}/reject`,         
         FRIEND_REQUESTS: "/api/user/friend-requests",                        
@@ -35,8 +36,8 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
 }
 
 export const signup = async (signupData) =>{
-    const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,signupData);
-    return response.data;
+    const res = await axiosInstance.post(API_PATHS.AUTH.REGISTER,signupData);
+    return res.data;
 }
 
 export const login  = async(loginData) => {
@@ -109,10 +110,10 @@ export const incommingFriendRequest = async () =>{
     return res.data;
 }
 
-export const getStreamToken =async ()=>{
-    const res = await axiosInstance.get(API_PATHS.CHAT.STREAM_TOKEN);
-    return res.data;
-}
+// export const getStreamToken =async ()=>{
+//     const res = await axiosInstance.get(API_PATHS.CHAT.STREAM_TOKEN);
+//     return res.data;
+// }
 
 export const getMessage = async(recipientId)=>{
     const res=await axiosInstance.get(API_PATHS.CHAT.GET_MESSAGE(recipientId));

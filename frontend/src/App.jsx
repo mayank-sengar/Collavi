@@ -1,5 +1,4 @@
 import React from 'react'
-import ChatPage from './pages/OldChatPage.jsx';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import Notifications  from './pages/Notifications';
@@ -37,7 +36,7 @@ function App() {
     }/>
         <Route path='/login' element={!authUser ? <Login /> : <Navigate to="/"/>} />
         <Route path='/signup' element={!authUser ? <SignUp /> : <Navigate to="/"/>} />
-
+        
         <Route path='/chat/:id' element={authUser && isOnboarded ?
             <Layout showSidebar={false}>
            <Chat/> 

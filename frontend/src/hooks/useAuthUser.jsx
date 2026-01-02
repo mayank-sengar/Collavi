@@ -1,6 +1,7 @@
 import React from 'react'
 import { getauthUser } from '../utils/apiPaths'
 import { useQuery } from '@tanstack/react-query'
+
 const useAuthUser = () => {
     const authUser = useQuery({
         //queryKey must be unique for a route ,does all of  caching,refetching,validation

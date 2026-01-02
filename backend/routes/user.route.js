@@ -10,14 +10,13 @@ router.use(verifyJWT)
 
 router.route('/').get(getRecommendedUsers);
 router.route('/friends').get(getMyFriends);
-//id of sender(User)
+//id of request receiver(Edit: 01/01/26)
 router.route('/friend-request/:id').post(sendFriendRequest);
 //id of friendRequest
 router.route('/friend-request/:id/accept').put(acceptFriendRequest);
 router.route('/friend-request/:id/reject').put(rejectFriendRequest);
 router.route('/friend-requests').get(getFriendRequests);
 router.route('/outgoing-friend-requests').get(getOutgoingFriendRequests);
-
 
 
 export default router;
