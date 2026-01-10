@@ -16,6 +16,7 @@ function App() {
 
 
     const {authUser, isLoading} = useAuthUser();
+    
     const isOnboarded = authUser?.isOnboarded;
 
     if(isLoading ) return <PageLoader/>
@@ -42,7 +43,7 @@ function App() {
            <Chat/> 
            </Layout>
            : <Navigate to="/login"/>}/>
-        <Route path='/call/:id' element={authUser && isOnboarded ? <CallPage /> : <Navigate to="/login"/>}/>
+        <Route path='/call/:callId' element={authUser && isOnboarded ? <CallPage /> : <Navigate to="/login"/>}/>
         <Route path='/notifications' element={
           authUser && isOnboarded ? 
         <Layout showSidebar={true}> 
@@ -53,6 +54,7 @@ function App() {
 
           <Route path='friends' element={authUser && isOnboarded ? <Layout showSidebar={true}><Friends/></Layout> : <Navigate to='/login'/>} />
         <Route path='/onboarding' element={authUser && !isOnboarded ? (<OnBoarding />) : (authUser && isOnboarded) ?<HomePage/>: (<Navigate to="/login"/>) } />
+        
       </Routes>
     </div>
   )

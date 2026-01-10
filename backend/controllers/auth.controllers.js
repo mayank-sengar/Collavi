@@ -4,7 +4,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { upsertStreamUser } from "../config/stream.js";
 
 const generateAccessAndRefereshTokens = async (userId) => {
     //using try-catch instead of asyncHandler util

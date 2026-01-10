@@ -1,119 +1,279 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
-import useAuthUser from "../hooks/useAuthUser";
-import { useQuery } from "@tanstack/react-query";
-import { getStreamToken } from "../utils/apiPaths";
-
-import {
-  StreamVideo,
-  StreamVideoClient,
-  StreamCall,
-  CallControls,
-  SpeakerLayout,
-  StreamTheme,
-  CallingState,
-  useCallStateHooks,
-} from "@stream-io/video-react-sdk";
-
-import "@stream-io/video-react-sdk/dist/css/styles.css";
-import toast from "react-hot-toast";
-import PageLoader from "../components/PageLoader";
-
-const STEAM_API_KEY = import.meta.env.VITE_STEAM_API_KEY;
-
+import React from 'react'
+import { useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom'
+import { useRef } from 'react';
+import useAuthUser from './../hooks/useAuthUser';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Mic } from 'lucide-react';
+import { MicOff } from 'lucide-react';
+import { useState } from 'react';
+import { Video } from 'lucide-react';
+import { VideoOff } from 'lucide-react';
 const CallPage = () => {
-  const { id: callId } = useParams();
-  const [client, setClient] = useState(null);
-  const [call, setCall] = useState(null);
-  const [isConnecting, setIsConnecting] = useState(true);
+  const {callId }= useParams();
+  const location = useLocation();
+  const friendName = location.state?.friendName;
+  
+  const localVideoRef = useRef(null);
+  const remoteVideoRef= useRef(null);
+  const localStreamRef = useRef(null);
 
-  const { authUser, isLoading } = useAuthUser();
+  const wsRef= useRef(null);
+  const pcRef= useRef(null);
+  const isCallerRef= useRef(false);
+  const hasCreatedOfferRef = useRef(false);
 
-  const { data: tokenData } = useQuery({
-    queryKey: ["streamToken"],
-    queryFn: getStreamToken,
-    enabled: !!authUser,
-  });
+  const [micOn,setMicOn] = useState(true);
+  const [videoOn,setVideoOn] = useState(true);
 
-  useEffect(() => {
-    const initCall = async () => {
-      if (!tokenData || !authUser || !callId) return;
+  const toggleMic = () => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const next = !micOn;
+    stream.getAudioTracks().forEach((track) => { track.enabled = next; });
+    setMicOn(next);
+  };
 
-      try {
-        console.log("Initializing Stream video client...");
+  const toggleVideo = () => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const next = !videoOn;
+    stream.getVideoTracks().forEach((track) => { track.enabled = next; });
+    setVideoOn(next);
+  };
+  const navigate = useNavigate()
 
-        // Access token from the nested structure 
-        const token = tokenData?.data?.token || tokenData?.token;
-        if (!token) {
-          throw new Error("Stream token is missing");
-        }
+   const handleExit = ()=>{
+    navigate(`/`)
+  }
 
-        const user = {
-          id: authUser._id,
-          name: authUser.fullName,
-          image: authUser.avatar, 
-        };
+const {authUser} =useAuthUser();
 
-        const videoClient = new StreamVideoClient({
-          apiKey: STEAM_API_KEY,
-          user,
-          token: token, // Use the extracted token
-        });
 
-        const callInstance = videoClient.call("default", callId);
+  useEffect(()=>{
+    hasCreatedOfferRef.current = false;
+    const ws= new WebSocket("ws://localhost:8080");
+    wsRef.current = ws;
+    
+    //adding STUN server
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" }
+      ]
+    });
 
-        await callInstance.join({ create: true });
+    pcRef.current = pc;
 
-        console.log("Joined call successfully");
+    navigator.mediaDevices.
+    getUserMedia({video : true, audio: true})
+    .then((stream)=>{
+      localStreamRef.current = stream;
+      localVideoRef.current.srcObject = stream;
 
-        setClient(videoClient);
-        setCall(callInstance);
-      } catch (error) {
-        console.error("Error joining call:", error);
-        toast.error("Could not join the call. Please try again.");
-      } finally {
-        setIsConnecting(false);
+      stream.getTracks().forEach((track)=>{
+        pc.addTrack(track,stream);
+      })
+    }).catch(err => {
+      console.error("Access error", err);
+    });
+
+    //when remote stream arrives
+    pc.ontrack = (event)=>{
+      console.log("Remote track received:", event.track.kind);
+      remoteVideoRef.current.srcObject = event.streams[0];
+    }
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && ws.readyState === WebSocket.OPEN) {
+        ws.send(
+          JSON.stringify({
+            type: "ice-candidate",
+            callId,
+            candidate: event.candidate,
+          })
+        );
       }
     };
 
-    initCall();
-  }, [tokenData, authUser, callId]);
+    pc.onconnectionstatechange = () => {
+      console.log("Connection state:", pc.connectionState);
+    };
 
-  if (isLoading || isConnecting) return <PageLoader />;
+    //websocket connected
+    ws.onopen = ()=>{
+      ws.send(JSON.stringify({
+        type: "join",
+        callId
+      }))
+    }
+
+    //handling signaling messages
+    ws.onmessage = async(event)=>{
+      const msg = JSON.parse(event.data);
+      console.log("Message received:", msg.type);
+
+      if(msg.type === "offer"){
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(msg.offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+
+          ws.send(
+            JSON.stringify({
+              type:"answer",
+              callId,
+              answer,
+              
+            })
+          )
+        } catch (err) {
+          console.error("Error handling offer:", err);
+        }
+      }
+
+      if(msg.type === "answer"){
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(msg.answer));
+        } catch (err) {
+          console.error("Error handling answer:", err);
+        }
+      }
+
+      if(msg.type === "ice-candidate" && pc.remoteDescription){
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+        } catch (err) {
+          console.error("Error adding ice candidate:", err);
+        }
+      }
+
+      if(msg.type === "role"){
+        isCallerRef.current = msg.role === "caller";
+        ws.send(JSON.stringify({
+          type: "setUser",
+          remoteUser : authUser
+        }))
+        console.log("Role assigned:", msg.role);
+      }
+
+      // start offer only after both peers joined
+      if(msg.type === "ready" && isCallerRef.current && !hasCreatedOfferRef.current){
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          hasCreatedOfferRef.current = true;
+         
+          ws.send(
+            JSON.stringify({
+              type:"offer",
+              callId,
+              offer,
+            })
+          )
+        } catch (err) {
+          console.error("Error creating offer:", err);
+        }
+      }
+    }
+
+  
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    }
+
+    return ()=>{
+      ws.close();
+      pc.close();
+    }
+  },[callId]);
+
+  
+  console.log("localvideored",localVideoRef);
+   
+  console.log("remotevideoref",remoteVideoRef);
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center">
-      <div className="relative">
-        {client && call ? (
-          <StreamVideo client={client}>
-            <StreamCall call={call}>
-              <CallContent />
-            </StreamCall>
-          </StreamVideo>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p>Could not initialize call. Please refresh or try again later.</p>
-          </div>
-        )}
+    <div>
+  
+      <div>
+        <button className="cursor-pointer mt-6 ml-2" onClick={handleExit}>
+      <div className="flex text-xl ">   
+      <ArrowLeft className='size-7'/>
+      <span>Exit</span>
       </div>
+      </button>
+     
+        <div  className="flex pt-8">
+        <div className ="ml-4">
+         
+          <video
+            ref={localVideoRef}
+            autoPlay
+            muted
+            playsInline
+         className= 'w-2xl  border-[1px] border-black text-amber-50 h-xl' 
+         
+          ></video>
+          <div className="pt-5">
+           <h4 className="bg-green-500 text-amber-50 inline p-2 ml-1.5 rounded-lg">{authUser?.fullName}</h4>
+           </div>
+        </div>
+
+        <div className="ml-2 flex-col">
+
+        <video 
+        ref={remoteVideoRef}
+        autoPlay
+        playsInline
+         className= 'w-2xl  border-[1px] border-black' 
+        />
+           <div className="pt-5">
+         <h4 className="bg-green-500 text-amber-50 inline p-2 ml-1.5 rounded-lg">{ friendName}</h4>
+          </div>
+        </div>
+
+       
+      </div>
+
+
+      </div>
+      <div className="flex justify-center mt-7 gap-8">
+      {micOn ?
+         <div >
+          <button className="bg-red-600 rounded-3xl p-3 cursor-pointer"
+          onClick={toggleMic}>
+            <Mic/>
+          </button>
+         </div>
+        :
+         <div>
+          <button  className="bg-gray-500 rounded-3xl p-3 cursor-pointer"
+          onClick={toggleMic}>
+            <MicOff/>
+          </button>
+          </div>}
+
+         {videoOn ?
+         <div >
+          <button className="bg-red-600 rounded-3xl p-3 cursor-pointer"
+          onClick={toggleVideo}>
+            <Video/>
+          </button>
+         </div>
+        :
+         <div>
+          <button  className="bg-gray-500 rounded-3xl p-3 cursor-pointer"
+          onClick={toggleVideo}>
+            <VideoOff/>
+          </button>
+          </div>}
+      </div>
+
     </div>
-  );
-};
+  )
+}
 
-const CallContent = () => {
-  const { useCallCallingState } = useCallStateHooks();
-  const callingState = useCallCallingState();
+export default CallPage
 
-  const navigate = useNavigate();
-
-  if (callingState === CallingState.LEFT) return navigate("/");
-
-  return (
-    <StreamTheme>
-      <SpeakerLayout />
-      <CallControls />
-    </StreamTheme>
-  );
-};
-
-export default CallPage;

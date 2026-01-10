@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {app, server, io} from './SocketIO/server.js'; 
+import { asyncHandler } from './utils/asyncHandler.js';
 
 
 // ES module compatible __dirname

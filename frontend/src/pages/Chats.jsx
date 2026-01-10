@@ -21,6 +21,7 @@ const Chats = () => {
   //Ref used so that socket is not reinitialized by the rerenders caused due to messages and conversations 
 const socket = useRef(null);
 
+
   const navigate =useNavigate();
   const queryClient = useQueryClient();
   const handleExit = ()=>{
@@ -30,6 +31,7 @@ const socket = useRef(null);
   const { id: recipientId } = useParams();
 
   const [messageInput ,setMessageInput] = useState('');
+  const [callId, setCallId] = useState(null);
   
   const {data: conversation = [],isLoading : loadingConversation } = useQuery({
     queryKey : ["conversation", recipientId],
@@ -51,7 +53,7 @@ const { data: friendDetails, isLoading: loadingFriend } = useQuery({
   enabled: !!recipientId
 });
 
-//handle when messafe is to be sent 
+//handle when message is to be sent 
 const handleSend= async()=>{
 
   if(!messageInput.trim()) return;
@@ -68,6 +70,8 @@ const handleSend= async()=>{
 }
 
 
+
+
 useEffect (()=>{
   //useRef() returns an object like { current: null }.
   //socket is conencted to backend io 
@@ -79,6 +83,7 @@ useEffect (()=>{
     console.log("Connected to socket: ", socket.current.id);
     //join room 
      const roomId = [authUser._id, recipientId].sort().join("_");
+     setCallId(roomId);
     socket.current.emit("joinRoom", roomId);
   })
 
@@ -121,7 +126,11 @@ useEffect (()=>{
 
             <div className="flex items-center justify-center mr-20 text-green-600
              bg-green-300 rounded-3xl h-8 w-12 cursor-pointer">
-              <button className='cursor-pointer'>
+              <button className='cursor-pointer' onClick={()=>{
+                navigate(`/call/${callId}`,{
+                 state: { friendName: friendDetails?.data?.fullName || "Friend" } 
+                })
+              }}>
                 <VideoIcon/>
               </button>
             </div>
