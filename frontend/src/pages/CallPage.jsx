@@ -53,7 +53,7 @@ const {authUser} =useAuthUser();
 
   useEffect(()=>{
     hasCreatedOfferRef.current = false;
-    const ws= new WebSocket("ws://localhost:8080");
+    const ws= new WebSocket(`ws://localhost:8080`);
     wsRef.current = ws;
     
     //adding STUN server

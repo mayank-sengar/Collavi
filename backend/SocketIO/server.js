@@ -1,10 +1,12 @@
 import { Server } from "socket.io";
 import express from "express";
 import  http from "http";
+import WebRTCServer from "../webrtc/wsServer.js";
 
 const app= express();
 
 const server = http.createServer(app);
+WebRTCServer({port:8080});
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:5173",

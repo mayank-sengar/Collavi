@@ -1,7 +1,10 @@
 import { WebSocketServer} from 'ws';
 
+export default function WebRTCServer(server){
 //webrtc signalling server running on 
-const wss = new WebSocketServer({port :8080});
+// const wss = new WebSocketServer({port :8080});
+//handling webrtc server in websocket server itself
+const wss = new WebSocketServer(server);
     console.log("WS Server running on port 8080")
 //callId : [ws1,ws2] set of sockets (2);
 const rooms = new Map();
@@ -105,3 +108,5 @@ wss.on("connection",(ws)=>{
 
         })
 })
+
+}

@@ -34,7 +34,6 @@ app.use(express.json());
 app.use(cookieParser());
 
 connectDB();
-
 app.use('/api/auth',authRoutes);
 app.use('/api/chat',chatRoutes);
 app.use('/api/user',userRoutes);
