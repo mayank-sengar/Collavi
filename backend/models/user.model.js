@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
         type:[String],
         default:[],
     },
+    embeddings:{
+      type:[Number],
+      index: false
+    },
     isOnboarded:{
         type:Boolean,
         default:false,

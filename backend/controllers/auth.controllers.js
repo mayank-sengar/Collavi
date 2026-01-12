@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import generateEmbeddings from "../utils/Embeddings.js";
 const generateAccessAndRefereshTokens = async (userId) => {
     //using try-catch instead of asyncHandler util
     try {
@@ -208,6 +208,8 @@ const logoutUser = asyncHandler(async(req,res)=>{
 const onBoardUser = asyncHandler( async (req,res)=>{
 const userId= req.user._id;
 
+const user = await User.findById(userId);
+
 //handling skill array 
 let skills = req.body['skills[]'] || req.body.skills || [];
 // skills comes as a single string, convert to array
@@ -254,15 +256,29 @@ if (req.file && req.file.path) {
     return res.status(400).json({ message: "Profile picture is required" });
 }
 
+
+ function buildProfileText(user){
+    return   `bio : ${user.bio}
+    skills : ${user.skills.join(", ")}
+    `
+}
+const profileText=buildProfileText(user);
+const embeddings = await generateEmbeddings(profileText)
+
+
+
+
 const updatedUser = await User.findByIdAndUpdate(
     userId,
     {
         fullName,
         bio,
         skills,
+        embeddings,
         location,
         isOnboarded: true,
         avatar: avatarUrl, 
+
     },
     { new: true }
 );

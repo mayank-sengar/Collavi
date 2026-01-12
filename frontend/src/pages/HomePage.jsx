@@ -102,7 +102,7 @@ const HomePage = () => {
   <PageLoader />
 ) : recommendedUser?.data && recommendedUser?.data?.length > 0 ? (
   <div className="flex flex-wrap gap-6 p-6 justify-left  ml-7">
-    {recommendedUser?.data?.map((user) => (
+    {recommendedUser?.data?.map(({user, score}) => (
       <SendRequestCard  
         key={user._id}
         friend={user}  

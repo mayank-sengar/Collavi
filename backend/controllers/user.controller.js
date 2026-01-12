@@ -4,22 +4,57 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import FriendRequest from "../models/friendRequest.model.js";
 
+
+
 const getRecommendedUsers = asyncHandler(async (req, res) => {
    const currentUserId = req.user._id;
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
         throw new ApiError(404, "User not found");
     }
+    function cosineSimilarity(a,b){
+    let dot =0,norm_a=0,norm_b=0;
 
-    
-    const recommendedUser = await User.find({
-        _id: { 
-            $ne: currentUserId,           // exclude current user
-            $nin: currentUser.friend      // exclude current user's friends
+    for(let i=0;i<a.length;i++){
+        dot += a[i]*b[i];
+        norm_a+= a[i]*a[i];
+        norm_b += b[i]*b[i];
+    }
+
+    return  dot/ (Math.sqrt(norm_a)*Math.sqrt(norm_b) );
+    }
+
+
+    const otherUser = await User.find({
+        _id:{
+            $ne: currentUserId,
+            $nin: currentUser.friend
         },
-        isOnboarded: true,
-        skills: { $in: currentUser.skills } // match users who have at least one skill in common
-    }).select("fullName avatar location skills bio");
+        isOnboarded:true
+    }).select("fullName avatar location skills bio embeddings");
+
+    const recommendedUser = otherUser.map((other)=>{
+        const similarity = cosineSimilarity(other.embeddings,currentUser.embeddings);
+
+        return {
+            user: other,
+            score : similarity
+        }
+    }
+    ).sort((a,b)=> b.score-a.score)
+    .slice(0,10)
+
+
+
+    //v1 Used direct word matching 
+    // const recommendedUser = await User.find({
+    //     _id: { 
+    //         $ne: currentUserId,           // exclude current user
+    //         $nin: currentUser.friend      // exclude current user's friends
+    //     },
+    //     isOnboarded: true,
+    //     skills: { $in: currentUser.skills } // match users who have at least one skill in common
+    // }).select("fullName avatar location skills bio");
 
     if (recommendedUser.length === 0) {
         return res.status(200).json(new ApiResponse(200, [], "No recommended users found"));
