@@ -3,15 +3,30 @@ import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import FriendRequest from "../models/friendRequest.model.js";
+import redisClient from './../server.js';
+
 
 
 
 const getRecommendedUsers = asyncHandler(async (req, res) => {
+   
    const currentUserId = req.user._id;
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
         throw new ApiError(404, "User not found");
     }
+
+    //checking if recommendedUsers is already cached using redis
+    const cacheKey = `recommendations:user${currentUserId}`
+    console.time("redis_get");
+    const cachedRecommendations =await redisClient.get(cacheKey);
+    console.timeEnd("redis_get");
+    if(cachedRecommendations){
+        console.log("returning cached result");
+        return res.status(200).json(new ApiResponse(200,cachedRecommendations,"cached recommended users"))
+    }
+
+
     function cosineSimilarity(a,b){
     let dot =0,norm_a=0,norm_b=0;
 
@@ -42,8 +57,7 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
         }
     }
     ).sort((a,b)=> b.score-a.score)
-    .slice(0,10)
-
+    .slice(0,20) // to limit the number of user recommended
 
 
     //v1 Used direct word matching 
@@ -59,7 +73,16 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
     if (recommendedUser.length === 0) {
         return res.status(200).json(new ApiResponse(200, [], "No recommended users found"));
     }
+
+    //REDIS-CACHING
+    await redisClient.setEx(
+        cacheKey,
+        60*60*24, // 1day
+        JSON.stringify(recommendedUser)
+    )
+   
     return res.status(200).json(new ApiResponse(200, recommendedUser, "Recommended users fetched successfully"));
+    
 });
 
 const getMyFriends = asyncHandler(async (req, res) => {

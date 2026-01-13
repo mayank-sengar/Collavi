@@ -198,14 +198,14 @@ const {authUser} =useAuthUser();
     <div>
   
       <div>
-        <button className="cursor-pointer mt-6 ml-2" onClick={handleExit}>
+        <button className="cursor-pointer mt-4 ml-2" onClick={handleExit}>
       <div className="flex text-xl ">   
       <ArrowLeft className='size-7'/>
       <span>Exit</span>
       </div>
       </button>
      
-        <div  className="flex pt-8">
+        <div  className="flex pt-6">
         <div className ="ml-4">
          
           <video
@@ -213,21 +213,21 @@ const {authUser} =useAuthUser();
             autoPlay
             muted
             playsInline
-         className= 'w-2xl  border-[1px] border-black text-amber-50 h-xl' 
+         className= 'w-2xl h-96 object-cover border-[1px] border-black text-amber-50 rounded-lg' 
+         />
          
-          ></video>
           <div className="pt-5">
            <h4 className="bg-green-500 text-amber-50 inline p-2 ml-1.5 rounded-lg">{authUser?.fullName}</h4>
            </div>
         </div>
 
-        <div className="ml-2 flex-col">
+        <div className="ml-4 flex-col">
 
         <video 
         ref={remoteVideoRef}
         autoPlay
         playsInline
-         className= 'w-2xl  border-[1px] border-black' 
+         className= 'w-2xl  border-[1px] border-black rounded-lg' 
         />
            <div className="pt-5">
          <h4 className="bg-green-500 text-amber-50 inline p-2 ml-1.5 rounded-lg">{ friendName}</h4>
@@ -236,10 +236,7 @@ const {authUser} =useAuthUser();
 
        
       </div>
-
-
-      </div>
-      <div className="flex justify-center mt-7 gap-8">
+       <div className="flex justify-center mt-7 gap-8">
       {micOn ?
          <div >
           <button className="bg-red-600 rounded-3xl p-3 cursor-pointer"
@@ -270,6 +267,10 @@ const {authUser} =useAuthUser();
           </button>
           </div>}
       </div>
+
+
+      </div>
+     
 
     </div>
   )

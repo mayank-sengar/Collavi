@@ -12,7 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {app, server, io} from './SocketIO/server.js'; 
 import { asyncHandler } from './utils/asyncHandler.js';
-
+import exeRedisClient from './utils/redisClient.js';
 
 // ES module compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +34,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 connectDB();
+const redisClient = await exeRedisClient();
+export default redisClient;
+
 app.use('/api/auth',authRoutes);
 app.use('/api/chat',chatRoutes);
 app.use('/api/user',userRoutes);

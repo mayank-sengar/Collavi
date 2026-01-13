@@ -259,11 +259,11 @@ if (req.file && req.file.path) {
 
  function buildProfileText(user){
     return   `bio : ${user.bio}
-    skills : ${user.skills.join(", ")}
-    `
+    skills : ${user.skills.join(", ")}`
 }
 const profileText=buildProfileText(user);
 const embeddings = await generateEmbeddings(profileText)
+console.log("embedings generated")
 
 
 
@@ -282,6 +282,7 @@ const updatedUser = await User.findByIdAndUpdate(
     },
     { new: true }
 );
+console.log("User updated");
 
 
 if(!updatedUser) return res.status(404).json({message:"User not found"});
