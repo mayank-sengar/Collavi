@@ -152,6 +152,8 @@ const sendFriendRequest = asyncHandler(async (req, res) => {
     })
 
     if (friendRequest) {
+        //to prevent showing recommended user to already sent friend requests
+        await redisClient.del(`recommendations:user:${senderId}`);
         return res.status(200).json(new ApiResponse(200, friendRequest, "Friend Request sent"));
     }
 });
