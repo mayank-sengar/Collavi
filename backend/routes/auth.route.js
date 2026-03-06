@@ -8,7 +8,6 @@ router.route('/register').post(registerUser)
 router.route('/login').post( loginUser)
 router.route('/refresh-token').post(verifyJWT,refreshAccessToken)
 router.route('/logout').post(verifyJWT,logoutUser)
-router.route('/logout').post(verifyJWT,logoutUser)
 router.route('/onboard').post(verifyJWT, upload.single('avatar'), onBoardUser)
 router.route('/me').get(verifyJWT,userDetails)
 

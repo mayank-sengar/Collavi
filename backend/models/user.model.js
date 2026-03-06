@@ -31,9 +31,15 @@ const userSchema = new mongoose.Schema({
         type:[String],
         default:[],
     },
-    embeddings:{
-      type:[Number],
-      index: false
+    embeddings: {
+      type: [Number],
+      default: [],
+      validate: {
+        validator: function(v) {
+          return v.length === 0 || v.length === 768;
+        },
+        message: 'Embeddings must be either empty or exactly 768 dimensions'
+      }
     },
     isOnboarded:{
         type:Boolean,

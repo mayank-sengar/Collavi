@@ -11,33 +11,53 @@ import redisClient from './../server.js';
 const getRecommendedUsers = asyncHandler(async (req, res) => {
    
    const currentUserId = req.user._id;
-    const currentUser = await User.findById(currentUserId);
+   
+
+    //checking if recommendedUsers is already cached using redis
+    const cacheKey = `recommendations:user:${currentUserId}`
+   const start = Date.now();
+
+const cachedRecommendations = await redisClient.get(cacheKey);
+
+const end = Date.now();
+
+console.log("Redis GET latency:", end - start, "ms");
+    if(cachedRecommendations){
+        console.log("returning cached result");
+        const parsedCache = JSON.parse(cachedRecommendations);
+        return res.status(200).json(new ApiResponse(200,parsedCache,"returning cached recommended users"))
+    }
+
+    //check first in redis then mongoDB query
+     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
         throw new ApiError(404, "User not found");
     }
 
-    //checking if recommendedUsers is already cached using redis
-    const cacheKey = `recommendations:user${currentUserId}`
-    console.time("redis_get");
-    const cachedRecommendations =await redisClient.get(cacheKey);
-    console.timeEnd("redis_get");
-    if(cachedRecommendations){
-        console.log("returning cached result");
-        return res.status(200).json(new ApiResponse(200,cachedRecommendations,"cached recommended users"))
-    }
 
+    // function cosineSimilarity(a,b){
+    // let dot =0,norm_a=0,norm_b=0;
 
-    function cosineSimilarity(a,b){
-    let dot =0,norm_a=0,norm_b=0;
+    // for(let i=0;i<a.length;i++){
+    //     dot += a[i]*b[i];
+    //     norm_a+= a[i]*a[i];
+    //     norm_b += b[i]*b[i];
+    // }
 
-    for(let i=0;i<a.length;i++){
-        dot += a[i]*b[i];
-        norm_a+= a[i]*a[i];
-        norm_b += b[i]*b[i];
-    }
+    // return  dot/ (Math.sqrt(norm_a)*Math.sqrt(norm_b) );
+    // }
 
-    return  dot/ (Math.sqrt(norm_a)*Math.sqrt(norm_b) );
-    }
+    function cosineSimilarity(a, b) {
+  if (!a || !b) return -1;
+  if (a.length !== b.length || a.length === 0) return -1;
+
+  let dot = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i]*b[i];
+  }
+  return dot;
+}
+
 
 
     const otherUser = await User.find({
@@ -47,17 +67,28 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
         },
         isOnboarded:true
     }).select("fullName avatar location skills bio embeddings");
+    
 
-    const recommendedUser = otherUser.map((other)=>{
-        const similarity = cosineSimilarity(other.embeddings,currentUser.embeddings);
+    // const recommendedUser = otherUser.map((other)=>{
+    //     const similarity = cosineSimilarity(other.embeddings,currentUser.embeddings);
 
-        return {
-            user: other,
-            score : similarity
-        }
-    }
-    ).sort((a,b)=> b.score-a.score)
-    .slice(0,20) // to limit the number of user recommended
+    //     return {
+    //         user: other,
+    //         score : similarity
+    //     }
+    // }
+    // ).sort((a,b)=> b.score-a.score)
+    // .slice(0,20) // to limit the number of user recommended
+
+    const recommendedUser = otherUser
+  .map(other => {
+    const score = cosineSimilarity(other.embeddings, currentUser.embeddings);
+    return { user: other, score };
+  })
+  .filter(u => u.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 20);
+
 
 
     //v1 Used direct word matching 

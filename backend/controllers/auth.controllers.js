@@ -261,7 +261,7 @@ if (req.file && req.file.path) {
     return   `bio : ${user.bio}
     skills : ${user.skills.join(", ")}`
 }
-const profileText=buildProfileText(user);
+const profileText=buildProfileText({ bio, skills });
 const embeddings = await generateEmbeddings(profileText)
 console.log("embedings generated")
 

@@ -100,7 +100,7 @@ const HomePage = () => {
 
 {loadingUsers ? (
   <PageLoader />
-) : recommendedUser?.data && recommendedUser?.data?.length > 0 ? (
+) : Array.isArray(recommendedUser?.data) && recommendedUser?.data?.length > 0 ? (
   <div className="flex flex-wrap gap-6 p-6 justify-left  ml-7">
     {recommendedUser?.data?.map(({user, score}) => (
       <SendRequestCard  

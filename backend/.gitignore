@@ -125,3 +125,6 @@ uploads/
 # Configuration files with sensitive data
 config/production.js
 config/local.js
+
+
+./scripts
