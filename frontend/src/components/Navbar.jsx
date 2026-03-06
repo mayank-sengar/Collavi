@@ -2,11 +2,12 @@ import React from 'react'
 import useAuthUser from './../hooks/useAuthUser';
 import { useLocation,Link, useNavigate } from 'react-router-dom';
 import Notifications from './../pages/Notifications';
-import { BellIcon } from 'lucide-react';
+import { BellIcon,BellDot } from 'lucide-react';
+
 import { LogOut } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient,useQuery } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
-import { logout } from '../utils/apiPaths';
+import { logout,incommingFriendRequest } from '../utils/apiPaths';
 const Navbar = () => {
     const generateInitialPfp = (name) => {
     const encodedName = encodeURIComponent(name || '');
@@ -21,7 +22,7 @@ const Navbar = () => {
 
   const queryClient =useQueryClient();
 
-   const { mutate:handleLogout  } = useMutation({
+  const { mutate:handleLogout  } = useMutation({
       mutationFn:logout ,
       //on logout success, clear auth user and navigate to login
       onSuccess: () => {
@@ -30,9 +31,13 @@ const Navbar = () => {
         queryClient.invalidateQueries({ queryKey: ["authUser"] });
         navigate('/login');
       }
-    });
-  
+  });
 
+  const {data: incommingFriendRequests} = useQuery({
+    queryKey: ["incommingFriendReqs"],
+    queryFn: incommingFriendRequest,
+  });
+  
 
   return (
     <>
@@ -52,9 +57,20 @@ const Navbar = () => {
            
        <div className="flex items-center  gap-3">
           <Link to="/notifications">
+          {incommingFriendRequests?.data?.incommingRequest?.length > 0 ? 
+          (
+           <button>
+          <BellDot className='mt-3 cursor-pointer'/>
+          </button>
+
+          ) : 
+          (
           <button>
           <BellIcon className='mt-3 cursor-pointer'/>
           </button>
+          )
+          }
+          
           </Link>
             
             <div className="w-10 h-10 rounded-full overflow-hidden">

@@ -15,13 +15,7 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
 
     //checking if recommendedUsers is already cached using redis
     const cacheKey = `recommendations:user:${currentUserId}`
-   const start = Date.now();
-
-const cachedRecommendations = await redisClient.get(cacheKey);
-
-const end = Date.now();
-
-console.log("Redis GET latency:", end - start, "ms");
+    const cachedRecommendations =await redisClient.get(cacheKey);
     if(cachedRecommendations){
         console.log("returning cached result");
         const parsedCache = JSON.parse(cachedRecommendations);

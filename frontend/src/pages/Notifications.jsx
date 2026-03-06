@@ -40,13 +40,13 @@ const Notifications = () => {
   return (
     <div className="bg-gray-900 min-h-screen p-6 ">
       <div className="max-w-4xl mx-auto ">
-        <h1 className="text-2xl font-bold text-white mb-6">Friend Requests</h1>
+        <h1 className="text-2xl font-bold text-white mb-15">Friend Requests</h1>
         
         {/* Incoming Friend Requests */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-white mb-4">Incoming Requests</h2>
           {incommingFriendRequests?.data?.incommingRequest && incommingFriendRequests.data.incommingRequest.length > 0 ? (
-            <div className="gap-4">
+            <div className="gap-8">
               {incommingFriendRequests.data.incommingRequest.map((request) => (
                 <AcceptReqCard 
                   key={request._id} 
