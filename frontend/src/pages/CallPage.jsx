@@ -53,7 +53,10 @@ const {authUser} =useAuthUser();
 
   useEffect(()=>{
     hasCreatedOfferRef.current = false;
-    const ws= new WebSocket(`ws://localhost:8080`);
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = window.location.host; // Uses current domain
+    console.log('Websocket connecting on: ' , `${protocol}://${host}/ws`);
+    const ws = new WebSocket(`${protocol}://${host}/ws`);
     wsRef.current = ws;
     
     //adding STUN server
@@ -76,6 +79,7 @@ const {authUser} =useAuthUser();
       })
     }).catch(err => {
       console.error("Access error", err);
+      
     });
 
     //when remote stream arrives
@@ -177,6 +181,7 @@ const {authUser} =useAuthUser();
       }
     }
 
+
   
 
     ws.onerror = (error) => {
@@ -184,10 +189,15 @@ const {authUser} =useAuthUser();
     }
 
     return ()=>{
+
+       if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+
       ws.close();
       pc.close();
     }
-  },[callId]);
+  },[callId,authUser , navigate]);
 
   
   console.log("localvideored",localVideoRef);
@@ -227,7 +237,7 @@ const {authUser} =useAuthUser();
         ref={remoteVideoRef}
         autoPlay
         playsInline
-         className= 'w-2xl  border-[1px] border-black rounded-lg' 
+        className= 'w-96 h-96 object-cover border-2 border-gray-600 rounded-lg bg-black'
         />
            <div className="pt-5">
          <h4 className="bg-green-500 text-amber-50 inline p-2 ml-1.5 rounded-lg">{ friendName}</h4>

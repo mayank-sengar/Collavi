@@ -1,0 +1,68 @@
+graph TB
+    subgraph Frontend["Frontend - React/Vite"]
+        App["App.jsx"]
+        Pages["Pages<br/>• Login/SignUp<br/>• HomePage<br/>• Chats<br/>• Friends<br/>• CallPage<br/>• Notifications"]
+        Components["Components<br/>• Navbar<br/>• Sidebar<br/>• FriendCard<br/>• SendRequestCard<br/>• ProfilePhotoSelector"]
+        Context["User Context & Hooks"]
+    end
+
+    subgraph Backend["Backend - Node.js/Express"]
+        Server["Express Server<br/>server.js"]
+        Auth["Auth Controller & Routes"]
+        Chat["Chat Controller & Routes"]
+        User["User Controller & Routes"]
+        Upload["Upload Middleware<br/>Cloudinary Integration"]
+        AuthMW["Auth Middleware"]
+    end
+
+    subgraph RealTime["Real-Time Communication"]
+        SocketIO["SocketIO Server<br/>Real-time Chat"]
+        WebRTC["WebRTC Server<br/>Video/Audio Calls"]
+    end
+
+    subgraph Data["Data Layer"]
+        MongoDB["MongoDB<br/>Users, Messages, Conversations, Friend Requests"]
+        Redis["Redis Cache<br/>Session Storage"]
+    end
+
+    subgraph External["External Services"]
+        Cloudinary["Cloudinary<br/>Image Storage"]
+        Embeddings["Embeddings Service<br/>Text Processing"]
+    end
+
+    subgraph Utils["Utilities"]
+        APIError["ApiError Handler"]
+        APIResponse["ApiResponse Formatter"]
+        AsyncHandler["Async Handler"]
+        Embeddings2["Embeddings Utility"]
+    end
+
+    Frontend -->|HTTP/REST| Server
+    Frontend -->|WebSocket| SocketIO
+    Frontend -->|WebRTC| WebRTC
+
+    Server -->|Auth Check| AuthMW
+    Server -->|Routes| Auth
+    Server -->|Routes| Chat
+    Server -->|Routes| User
+    Server -->|File Upload| Upload
+
+    Upload -->|Upload| Cloudinary
+
+    Auth -->|Query/Store| MongoDB
+    Chat -->|Query/Store| MongoDB
+    User -->|Query/Store| MongoDB
+
+    Auth -->|Cache| Redis
+    Chat -->|Cache| Redis
+
+    SocketIO -->|Real-time Messages| MongoDB
+    SocketIO -->|Cache| Redis
+
+    WebRTC -->|Signal| Server
+
+    Server -->|Uses| APIError
+    Server -->|Uses| APIResponse
+    Server -->|Uses| AsyncHandler
+    Chat -->|Uses| Embeddings2
+    Embeddings2 -->|Generate| Embeddings

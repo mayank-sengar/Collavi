@@ -6,19 +6,28 @@ import WebRTCServer from "../webrtc/wsServer.js";
 const app= express();
 
 const server = http.createServer(app);
-WebRTCServer({port:8080});
+WebRTCServer(server);
 const io = new Server(server, {
+  path: "/socket.io/",
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
     credentials: true,
-  },    
+  },
+ 
+  pingInterval: 25000,
+  pingTimeout: 60000,
 });
 
 io.on("connection", (socket) => {
   socket.on("joinRoom", (roomId) => {
     socket.join(roomId);
     console.log(`User ${socket.id} joined room ${roomId}`);
+  });
+
+  socket.on("leaveRoom", (roomId) => {
+    socket.leave(roomId);
+    console.log(`User ${socket.id} left room ${roomId}`);
   });
 
   socket.on("sendMessage", (data) => {

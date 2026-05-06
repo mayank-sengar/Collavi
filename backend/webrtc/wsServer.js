@@ -1,15 +1,26 @@
 import { WebSocketServer} from 'ws';
 
 export default function WebRTCServer(server){
-//webrtc signalling server running on 
-// const wss = new WebSocketServer({port :8080});
-//handling webrtc server in websocket server itself
-const wss = new WebSocketServer(server);
-    console.log("WS Server running on port 8080")
-//callId : [ws1,ws2] set of sockets (2);
-const rooms = new Map();
+  // Use noServer: true and handle upgrade manually ONLY for /ws path
+  const wss = new WebSocketServer({ noServer: true });
+  
+  // Handle WebSocket upgrade for /ws path only
+  server.on('upgrade', (request, socket, head) => {
+    // Only handle /ws path, let Socket.IO handle everything else
+    if (request.url.startsWith('/ws')) {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    }
+    // Don't destroy socket - let Socket.IO's handler process it
+  });
 
-wss.on("connection",(ws)=>{
+  console.log("WS Server running on /ws")
+  
+  //callId : [ws1,ws2] set of sockets (2);
+  const rooms = new Map();
+
+  wss.on("connection",(ws)=>{
     ws.on("message",(data)=>{
         let message;
         try {
@@ -45,7 +56,6 @@ wss.on("connection",(ws)=>{
            ws.send(JSON.stringify({
                 type: "role",
                 role: room.length==1 ? "caller" : "receiver",
-            
             }))
           console.log("User joined")
 
@@ -57,7 +67,6 @@ wss.on("connection",(ws)=>{
                         }
                     })
                 }
-
         return;
 
         }

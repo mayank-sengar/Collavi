@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import Message from "../models/message.model.js";
 import Conversation from "./../models/conversation.model.js";
 import User from "../models/user.model.js";
+import { io } from "../SocketIO/server.js";
 
 // export const getStreamToken = asyncHandler(async (req, res) => {
 //     try {
@@ -24,6 +25,7 @@ const senderId=req.user._id;
 const recipientId  = req.params.id;
 
 const message = req.body.message;
+const clientMsgId = req.body.clientMsgId;
  
 let conversation = await Conversation.findOne({
     members : {
@@ -54,6 +56,17 @@ if(newMessage){
 
 //2 promises and both run parallely 
 await Promise.all([conversation.save(),newMessage.save()]);
+
+// Emit from server after DB write so receiver gets realtime updates reliably
+const roomId = [senderId.toString(), recipientId.toString()].sort().join("_");
+io.to(roomId).emit("newMessage", {
+    _id: newMessage._id,
+    sender: senderId.toString(),
+    recipient: recipientId.toString(),
+    message: newMessage.message,
+    clientMsgId,
+    createdAt: newMessage.createdAt,
+});
 
 return res.status(200).json(new ApiResponse(200, newMessage, "Message Sent Successfully"));
 

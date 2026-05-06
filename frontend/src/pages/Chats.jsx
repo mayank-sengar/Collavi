@@ -14,12 +14,13 @@ import useAuthUser from './../hooks/useAuthUser';
 
 
 
-const SOCKET_URL="http://localhost:8001";
+const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
 const Chats = () => {
   const  {authUser} = useAuthUser();
   //Ref used so that socket is not reinitialized by the rerenders caused due to messages and conversations 
 const socket = useRef(null);
+const messagesEndRef = useRef(null);
 
 
   const navigate =useNavigate();
@@ -41,7 +42,7 @@ const socket = useRef(null);
 
   const {mutate : sendMessageMutation } = useMutation ( {
     mutationFn: (messageObj) => sendMessage(recipientId, messageObj),
-    onSuccess :  () => queryClient.invalidateQueries({queryKey :  ["conversation", recipientId]})
+    onError :  () => queryClient.invalidateQueries({queryKey :  ["conversation", recipientId]})
   })
 
 
@@ -56,50 +57,144 @@ const { data: friendDetails, isLoading: loadingFriend } = useQuery({
 //handle when message is to be sent 
 const handleSend= async()=>{
 
-  if(!messageInput.trim()) return;
+  if(!messageInput.trim() || !authUser?._id || !recipientId) return;
 
-  //socket sends the message 
-  socket.current.emit("sendMessage",{
-    sender:authUser._id,
-    recipient:recipientId,
-    message: messageInput,
-  })
-//to store the message in db also 
-  sendMessageMutation(messageInput);
+  const roomId = [authUser._id, recipientId].sort().join("_");
+  const clientMsgId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const text = messageInput;
+  const createdAt = new Date().toISOString();
+
+  // Optimistically render message immediately for sender
+  queryClient.setQueryData(["conversation", recipientId], (oldData) => {
+    const prev = oldData?.data || [];
+    return {
+      ...(oldData || {}),
+      data: [
+        ...prev,
+        {
+          clientMsgId,
+          sender: authUser._id,
+          recipient: recipientId,
+          message: text,
+          createdAt,
+        },
+      ],
+    };
+  });
+
+  // Persist first; backend emits realtime to room after save
+  sendMessageMutation({ message: text, clientMsgId, roomId });
   setMessageInput("");
 }
 
 
 
 
-useEffect (()=>{
-  //useRef() returns an object like { current: null }.
-  //socket is conencted to backend io 
-  socket.current = io(SOCKET_URL,{
+// Initialize socket connection once on mount
+useEffect(() => {
+  if (socket.current) return; // Already initialized
+
+  socket.current = io(SOCKET_URL, {
     withCredentials: true,
-  })
-//when connection is made 
-  socket.current.on("connect",()=>{
-    console.log("Connected to socket: ", socket.current.id);
-    //join room 
-     const roomId = [authUser._id, recipientId].sort().join("_");
-     setCallId(roomId);
+    transports: ["websocket"],
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: 10,
+  });
+
+  socket.current.on("connect", () => {
+    console.log("Socket connected");
+  });
+
+  socket.current.on("disconnect", () => {
+    console.log("Socket disconnected");
+  });
+
+  socket.current.on("error", (error) => {
+    console.error("Socket error:", error);
+  });
+
+  return () => {
+    if (socket.current) {
+      socket.current.disconnect();
+    }
+  };
+}, []);
+
+// Set up newMessage listener
+useEffect(() => {
+  if (!socket.current) return;
+
+  // Remove previous listener to avoid stacking
+  socket.current.off("newMessage");
+
+  const handleNewMessage = (msg) => {
+    // Append instantly; avoid network refetch delay for every message
+    queryClient.setQueryData(["conversation", recipientId], (oldData) => {
+      const prev = oldData?.data || [];
+
+      // Only append messages from this chat
+      const isSameChat =
+        (msg.sender === authUser._id && msg.recipient === recipientId) ||
+        (msg.sender === recipientId && msg.recipient === authUser._id);
+
+      if (!isSameChat) return oldData;
+
+      // Prevent duplicates (echo + optimistic update)
+      const exists = prev.some((m) => m.clientMsgId && m.clientMsgId === msg.clientMsgId);
+      if (exists) {
+        const updated = prev.map((m) =>
+          m.clientMsgId === msg.clientMsgId ? { ...m, ...msg } : m
+        );
+        return {
+          ...(oldData || {}),
+          data: updated,
+        };
+      }
+
+      return {
+        ...(oldData || {}),
+        data: [...prev, msg],
+      };
+    });
+  };
+
+  socket.current.on("newMessage", handleNewMessage);
+
+  return () => {
+    socket.current?.off("newMessage", handleNewMessage);
+  };
+}, [recipientId, authUser?._id, queryClient]);
+
+// Handle room join when chat partner changes
+useEffect(() => {
+  if (!authUser?._id || !recipientId || !socket.current) return;
+
+  const roomId = [authUser._id, recipientId].sort().join("_");
+  setCallId(roomId);
+
+  if (socket.current.connected) {
     socket.current.emit("joinRoom", roomId);
-  })
-
-  socket.current.on("newMessage",(msg)=>{
-    //refetch messages
-    queryClient.invalidateQueries({queryKey:[conversation,recipientId]});
-    console.log("New Message received ",msg);
-  })
-
-  return ()=>{
-    socket.current.disconnect();
+  } else {
+    const onConnect = () => {
+      socket.current.emit("joinRoom", roomId);
+      socket.current.off("connect", onConnect);
+    };
+    socket.current.on("connect", onConnect);
   }
-}
-,[recipientId,authUser._id])
 
+  return () => {
+    socket.current?.emit("leaveRoom", roomId);
+  };
+}, [recipientId, authUser?._id])
 
+// Auto-scroll to bottom when messages change
+useEffect(() => {
+  if (messagesEndRef.current) {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }
+}, [conversation?.data]);
 
 
   return (
@@ -144,15 +239,21 @@ useEffect (()=>{
             <div className="text-center text-gray-500">Loading messages...</div>
           ) : conversation?.data?.length > 0 ? (
             conversation?.data?.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`p-2 rounded-lg max-w-xs break-words ${
-                  msg.sender === recipientId
-                    ? 'bg-gray-500 self-start'
-                    : 'bg-green-700 text-white self-end ml-auto'
-                }`}
-              >
-                {msg.message}
+              <div key={idx} className={msg.sender === recipientId ? "self-start" : "self-end ml-auto text-right"}>
+                <div
+                  className={`p-2 rounded-lg max-w-xs break-words ${
+                    msg.sender === recipientId
+                      ? 'bg-gray-500 self-start'
+                      : 'bg-green-700 text-white self-end ml-auto'
+                  }`}
+                >
+                  {msg.message}
+                </div>
+                {msg.createdAt && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                )}
               </div>
             ))
           ) : (
@@ -160,6 +261,7 @@ useEffect (()=>{
               No conversations yet
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
               

@@ -59,7 +59,7 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
             $ne: currentUserId,
             $nin: currentUser.friend
         },
-        isOnboarded:true
+        isOnboarded:trueq
     }).select("fullName avatar location skills bio embeddings");
     
 

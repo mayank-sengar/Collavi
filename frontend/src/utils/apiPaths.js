@@ -121,9 +121,8 @@ export const getMessage = async(recipientId)=>{
 }
 
 export const sendMessage = async(recipientId, message)=>{
-    const res =await axiosInstance.post(API_PATHS.CHAT.SEND_MESSAGE(recipientId), {
-        message
-    });
+    const payload = typeof message === "string" ? { message } : message;
+    const res =await axiosInstance.post(API_PATHS.CHAT.SEND_MESSAGE(recipientId), payload);
     return res.data;
 }
 
