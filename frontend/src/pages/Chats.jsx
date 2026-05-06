@@ -30,9 +30,11 @@ const messagesEndRef = useRef(null);
   }
 
   const { id: recipientId } = useParams();
+  const computedCallId = authUser?._id && recipientId
+    ? [authUser._id, recipientId].sort().join("_")
+    : null;
 
   const [messageInput ,setMessageInput] = useState('');
-  const [callId, setCallId] = useState(null);
   
   const {data: conversation = [],isLoading : loadingConversation } = useQuery({
     queryKey : ["conversation", recipientId],
@@ -59,7 +61,7 @@ const handleSend= async()=>{
 
   if(!messageInput.trim() || !authUser?._id || !recipientId) return;
 
-  const roomId = [authUser._id, recipientId].sort().join("_");
+  const roomId = computedCallId;
   const clientMsgId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const text = messageInput;
   const createdAt = new Date().toISOString();
@@ -172,8 +174,6 @@ useEffect(() => {
   if (!authUser?._id || !recipientId || !socket.current) return;
 
   const roomId = [authUser._id, recipientId].sort().join("_");
-  setCallId(roomId);
-
   if (socket.current.connected) {
     socket.current.emit("joinRoom", roomId);
   } else {
@@ -219,13 +219,17 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="flex items-center justify-center mr-20 text-green-600
-             bg-green-300 rounded-3xl h-8 w-12 cursor-pointer">
-              <button className='cursor-pointer' onClick={()=>{
-                navigate(`/call/${callId}`,{
-                 state: { friendName: friendDetails?.data?.fullName || "Friend" } 
-                })
-              }}>
+            <div className="flex items-center justify-center mr-20 text-green-700 bg-green-300 rounded-3xl h-8 w-12">
+              <button
+                className='cursor-pointer disabled:cursor-not-allowed disabled:opacity-60'
+                disabled={!computedCallId}
+                onClick={() => {
+                  if (!computedCallId) return;
+                  navigate(`/call/${computedCallId}`, {
+                    state: { friendName: friendDetails?.data?.fullName || "Friend" }
+                  });
+                }}
+              >
                 <VideoIcon/>
               </button>
             </div>
