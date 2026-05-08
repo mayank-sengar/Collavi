@@ -1,6 +1,6 @@
 import axiosInstance from "./axiosInstance";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
  const API_PATHS={
     AUTH:{
@@ -30,7 +30,8 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8001";
         ACCEPT_FRIEND_REQUEST:(id)=> `/api/user/friend-request/${id}/accept`,        
         REJECT_FRIEND_REQUEST:(id)=> `/api/user/friend-request/${id}/reject`,         
         FRIEND_REQUESTS: "/api/user/friend-requests",                        
-        OUTGOING_FRIEND_REQUESTS: "/api/user/outgoing-friend-requests" 
+        OUTGOING_FRIEND_REQUESTS: "/api/user/outgoing-friend-requests" ,
+        EDIT_PROFILE : "/api/user/edit-profile"
     }
 
 }
@@ -107,6 +108,11 @@ export const rejectFriendRequest = async (reqId)=>{
 
 export const incommingFriendRequest = async () =>{
     const res = await axiosInstance.get(API_PATHS.USER.FRIEND_REQUESTS);
+    return res.data;
+}
+
+export const editProfile = async (profileData) => {
+    const res = await axiosInstance.put(API_PATHS.USER.EDIT_PROFILE, profileData);
     return res.data;
 }
 

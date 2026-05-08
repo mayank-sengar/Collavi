@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import FriendRequest from "../models/friendRequest.model.js";
 import redisClient from './../server.js';
+import generateEmbeddings from "../utils/Embeddings.js";
 
 
 
@@ -21,6 +22,7 @@ const getRecommendedUsers = asyncHandler(async (req, res) => {
         const parsedCache = JSON.parse(cachedRecommendations);
         return res.status(200).json(new ApiResponse(200,parsedCache,"returning cached recommended users"))
     }
+    console.log("computing recommendations");
 
     //check first in redis then mongoDB query
      const currentUser = await User.findById(currentUserId);
@@ -262,5 +264,46 @@ const rejectFriendRequest = asyncHandler (async (req,res) => {
     return res.status(200).json(new ApiResponse(200,{},"Friend request rejected successfully"));
 })
 
+
+const editProfile = asyncHandler (async (req,res) => {
+        const reqId= req.user._id;
+        //leaving the avatar for now 
+        const {fullName, bio, skills, location} = req.body;
+        if (!Array.isArray(skills)) {
+        throw new ApiError(400, "Skills must be an array");
+    }
+        
+
+         const profileText = `bio : ${bio}\nskills : ${skills.join(", ")}`;
+    const newEmbeddings = await generateEmbeddings(profileText);
+       
+
+        const editedUser =  await User.findByIdAndUpdate(
+            reqId,
+            {
+                fullName,
+                bio,
+                skills,
+                location,
+                embeddings: newEmbeddings,
+            },
+            {new:true}
+        ).select("-password -refreshToken");
+
+
+        if(!editedUser) {
+            throw new ApiError(500,"Can not edit user details at this moment");
+        }
+     //refresh recommended Users
+        await redisClient.del(`recommendations:user:${reqId}`);
+
+
+        return res.status(200).json(new ApiResponse(200,editedUser,"User details updated successfully"));
+
+})
+
+
+
+
 export { getRecommendedUsers, getMyFriends, sendFriendRequest, acceptFriendRequest,
-    getFriendRequests,getOutgoingFriendRequests, rejectFriendRequest};
+    getFriendRequests,getOutgoingFriendRequests, rejectFriendRequest,editProfile};

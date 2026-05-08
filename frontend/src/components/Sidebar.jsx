@@ -2,8 +2,9 @@ import React from 'react'
 import useAuthUser from '../hooks/useAuthUser'
 import {Link,useLocation} from "react-router";
 import { BellIcon, Home, HomeIcon } from 'lucide-react';
-import { User } from 'lucide-react';
+import { UserRoundPlus } from 'lucide-react';
 import { Bell } from 'lucide-react';
+import { UserRoundPen } from 'lucide-react';
 
 const Sidebar = () => {
     const {authUser} = useAuthUser();
@@ -36,7 +37,7 @@ const Sidebar = () => {
         to='/friends'
         className={`px-4 py-3 rounded-lg flex items-center gap-3 w-full transition-colors duration-200 hover:bg-gray-700 
         ${currentPath == "/friends" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
-        <User className="w-5 h-5" />
+        <UserRoundPlus className="w-5 h-5" />
         <span>Friends</span>
         </Link>
 
@@ -46,6 +47,14 @@ const Sidebar = () => {
         ${currentPath == "/notifications" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
         <BellIcon className="w-5 h-5" />
         <span>Notifications</span>
+        </Link>
+
+        <Link
+        to='/editProfile'
+        className={`px-4 py-3 rounded-lg flex items-center gap-3 w-full transition-colors duration-200 hover:bg-gray-700 
+        ${currentPath == "/editProfile" ? "bg-emerald-600 text-white" : "text-gray-300 hover:text-white"}`}>
+        <UserRoundPen className="w-5 h-5" />
+        <span>Profile</span>
         </Link>
 
         {/* User profile section */}

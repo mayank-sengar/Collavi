@@ -263,7 +263,7 @@ if (req.file && req.file.path) {
 }
 const profileText=buildProfileText({ bio, skills });
 const embeddings = await generateEmbeddings(profileText)
-console.log("embedings generated")
+// console.log("embedings generated")
 
 
 
