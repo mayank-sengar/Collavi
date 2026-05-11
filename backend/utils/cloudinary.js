@@ -11,9 +11,6 @@ const __dirname = path.dirname(__filename);
 // Configure dotenv from cloudinary.js (go up one level to backend root)
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-// console.log("DEBUG: CLOUD_NAME =", process.env.CLOUDINARY_CLOUD_NAME);
-// console.log("DEBUG: API_KEY =", process.env.CLOUDINARY_API_KEY);
-// console.log("DEBUG: API_SECRET =", process.env.CLOUDINARY_API_SECRET ? "***HIDDEN***" : "NOT SET");
 
     // Configuration
     cloudinary.config({

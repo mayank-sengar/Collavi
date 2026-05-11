@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import generateEmbeddings from "../utils/Embeddings.js";
+
 const generateAccessAndRefereshTokens = async (userId) => {
     //using try-catch instead of asyncHandler util
     try {
@@ -12,7 +13,7 @@ const generateAccessAndRefereshTokens = async (userId) => {
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
-        user.refreshToken = refreshToken;
+        
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };

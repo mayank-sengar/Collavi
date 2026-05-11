@@ -29,8 +29,10 @@ app.use(cors({
     //backend also allows cookies / tokens to be sent across origins.
 }));
 
-
+//automatically parse incoming json into request body  (req.body)
 app.use(express.json());
+
+//parse cookies from incoming requests  (req.cookie)
 app.use(cookieParser());
 
 connectDB();
