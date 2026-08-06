@@ -91,11 +91,28 @@ Create `.env` files in both `backend` and `frontend` directories.
 **Backend `.env`:**
 
 ```
-PORT=8000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-STREAM_API_KEY=your_stream_api_key
-STREAM_API_SECRET=your_stream_api_secret
+PORT=8001
+MONGODB_URI=
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+GEMINI_API_KEY=
+
+REDIS_USERNAME=
+REDIS_PASSWORD=
+REDIS_HOST=
+REDIS_PORT=
+REDIS_URL=
+
+CORS_ORIGIN=
+ACCESS_TOKEN_SECRET=
+ACCESS_TOKEN_EXPIRY=
+REFRESH_TOKEN_SECRET=
+REFRESH_TOKEN_EXPIRY=
+FRONTEND_URL=
+BACKEND_URL=
 ```
 
 **Frontend `.env`:**
